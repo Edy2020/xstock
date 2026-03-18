@@ -1,9 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* ============================
    XSTOCK — CSS Global
+   Cargado directamente (sin Vite)
    ============================ */
 
 :root {
@@ -26,7 +23,7 @@
 html, body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', 'Figtree', system-ui, sans-serif;
+    font-family: 'Figtree', system-ui, -apple-system, sans-serif;
     font-size: 14px;
     background: var(--color-bg);
     color: var(--color-text);
@@ -124,9 +121,13 @@ html, body {
     border-left-color: var(--color-primary);
 }
 
-.sidebar-link svg {
-    width: 16px;
-    height: 16px;
+/* Fuerza el tamaño de los iconos del sidebar */
+.sidebar-link svg,
+.sidebar-link svg * {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
     flex-shrink: 0;
 }
 
@@ -266,6 +267,15 @@ html, body {
     margin-bottom: 8px;
 }
 
+/* Fuerza el tamaño de iconos dentro de stat-icon */
+.stat-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    display: block;
+}
+
 /* Botones */
 .btn {
     display: inline-flex;
@@ -280,6 +290,7 @@ html, body {
     text-decoration: none;
     line-height: 1;
     white-space: nowrap;
+    background: none;
 }
 
 .btn-primary {
@@ -311,9 +322,13 @@ html, body {
     font-size: 12px;
 }
 
+/* Fuerza icono de botón */
 .btn svg {
-    width: 15px;
-    height: 15px;
+    width: 15px !important;
+    height: 15px !important;
+    max-width: 15px !important;
+    max-height: 15px !important;
+    flex-shrink: 0;
 }
 
 /* Quick action cards (dashboard) */
@@ -346,8 +361,11 @@ html, body {
 }
 
 .quick-action .qa-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    display: block;
 }
 
 .quick-action .qa-title {
@@ -391,7 +409,6 @@ table.data-table tbody tr {
 }
 
 table.data-table tbody tr:last-child { border-bottom: none; }
-
 table.data-table tbody tr:hover { background: var(--color-bg); }
 
 table.data-table tbody td {
@@ -409,11 +426,11 @@ table.data-table tbody td {
     font-weight: 500;
 }
 
-.badge-green { background: #dcfce7; color: #15803d; }
-.badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-green  { background: #dcfce7; color: #15803d; }
+.badge-red    { background: #fee2e2; color: #b91c1c; }
 .badge-yellow { background: #fef9c3; color: #a16207; }
-.badge-blue { background: #dbeafe; color: #1d4ed8; }
-.badge-gray { background: #f4f4f5; color: #52525b; }
+.badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.badge-gray   { background: #f4f4f5; color: #52525b; }
 
 /* Formularios */
 .form-group {
@@ -439,6 +456,7 @@ table.data-table tbody td {
     background: var(--color-surface);
     width: 100%;
     outline: none;
+    font-family: inherit;
 }
 
 .form-input:focus,
@@ -450,10 +468,10 @@ table.data-table tbody td {
 
 .form-textarea { resize: vertical; min-height: 90px; }
 
-/* Grid helpers */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+/* Grids */
+.grid-2    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4    { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 .grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 
 @media (max-width: 1100px) {
@@ -480,6 +498,7 @@ table.data-table tbody td {
     font-size: 18px;
     font-weight: 700;
     margin: 0 0 2px;
+    line-height: 1.3;
 }
 
 .page-header-left p {
@@ -507,11 +526,7 @@ table.data-table tbody td {
     color: var(--color-text-muted);
 }
 
-.empty-state svg { width: 40px; height: 40px; opacity: 0.4; }
-.empty-state h3 { font-size: 14px; font-weight: 600; color: var(--color-text); margin: 0; }
-.empty-state p { font-size: 13px; margin: 0; }
-
-/* Alert / Notification bar */
+/* Alert */
 .alert {
     display: flex;
     align-items: flex-start;
@@ -522,11 +537,11 @@ table.data-table tbody td {
     border: 1px solid transparent;
 }
 
-.alert svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
-.alert-info { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.alert svg { width: 16px !important; height: 16px !important; flex-shrink: 0; margin-top: 1px; }
+.alert-info    { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
 .alert-success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
 .alert-warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-.alert-danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.alert-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 
 /* Search bar */
 .search-bar {
@@ -547,11 +562,12 @@ table.data-table tbody td {
     color: var(--color-text);
     background: transparent;
     width: 220px;
+    font-family: inherit;
 }
 
 .search-bar svg {
-    width: 15px;
-    height: 15px;
+    width: 15px !important;
+    height: 15px !important;
     color: var(--color-text-muted);
     flex-shrink: 0;
 }
@@ -573,9 +589,15 @@ table.data-table tbody td {
     background: var(--color-surface);
     cursor: pointer;
     color: var(--color-text-muted);
+    font-size: 13px;
+    font-family: inherit;
 }
 
-.pg-btn:hover, .pg-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pg-btn:hover, .pg-btn.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
 
 /* Tabs */
 .tabs {
@@ -599,5 +621,21 @@ table.data-table tbody td {
 .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
 
 /* Progress bar */
-.progress-bar-wrap { background: #f4f4f5; border-radius: 99px; height: 6px; overflow: hidden; }
-.progress-bar-fill { height: 100%; border-radius: 99px; background: var(--color-primary); }
+.progress-bar-wrap {
+    background: #f4f4f5;
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--color-primary);
+}
+
+/* Asegura que ningún SVG suelto se agrande */
+svg {
+    max-width: 100%;
+    height: auto;
+}
