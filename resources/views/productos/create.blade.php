@@ -49,6 +49,12 @@
                         </datalist>
                     </div>
 
+                    {{-- Descripción --}}
+                    <div class="form-group">
+                        <label class="form-label" for="descripcion">Descripción (Opcional)</label>
+                        <textarea id="descripcion" name="descripcion" class="form-textarea" placeholder="Breve descripción o caracteristicas del producto...">{{ old('descripcion') }}</textarea>
+                    </div>
+
                     {{-- Proveedor --}}
                     <div class="form-group">
                         <label class="form-label" for="proveedor_id">Proveedor</label>

@@ -415,6 +415,9 @@ svg {
 .btn-danger { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
 .btn-danger:hover { background: #b91c1c; color: #fff; }
 
+.btn-success { background: var(--color-success); color: #fff; border-color: var(--color-success); }
+.btn-success:hover { background: #15803d; color: #fff; }
+
 .btn-sm { padding: 5px 10px; font-size: 12px; }
 
 .btn svg {

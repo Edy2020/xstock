@@ -44,6 +44,15 @@
                     </div>
                 </div>
             </div>
+
+            @if($producto->descripcion)
+            <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Descripción</div>
+                <p style="font-size:13px; color:var(--color-text-muted); margin:0; line-height:1.6">
+                    {!! nl2br(e($producto->descripcion)) !!}
+                </p>
+            </div>
+            @endif
         </div>
 
         {{-- Stock y ventas --}}

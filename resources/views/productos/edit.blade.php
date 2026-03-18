@@ -46,6 +46,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="descripcion">Descripción (Opcional)</label>
+                        <textarea id="descripcion" name="descripcion" class="form-textarea" placeholder="Breve descripción o caracteristicas del producto...">{{ old('descripcion', $producto->descripcion) }}</textarea>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="proveedor_id">Proveedor</label>
                         <select id="proveedor_id" name="proveedor_id" class="form-select">
                             <option value="">Sin proveedor</option>
