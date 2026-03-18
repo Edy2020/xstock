@@ -2,11 +2,13 @@
 
     <div class="page-header">
         <div class="page-header-left">
-            <h1>{{ $producto->nombre ?? 'Monitor LG 24"' }}</h1>
-            <p style="font-family:monospace">{{ $producto->sku ?? 'PRD-001' }}</p>
+            <h1>{{ $producto->nombre }}</h1>
+            <p style="font-family:monospace">ID-{{ str_pad($producto->id, 5, '0', STR_PAD_LEFT) }}</p>
         </div>
         <div style="display:flex; gap:8px">
-            <a href="{{ route('productos.edit', $producto->id ?? 1) }}" class="btn btn-primary">Editar</a>
+            @if(auth()->user()->hasPermission('productos.editar'))
+            <a href="{{ route('productos.edit', $producto) }}" class="btn btn-primary">Editar</a>
+            @endif
             <a href="{{ route('productos.index') }}" class="btn btn-secondary">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                 Volver
@@ -21,45 +23,26 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">Información general</div>
-                    <span class="badge badge-green">En stock</span>
+                    <span class="badge {{ $producto->badge_estado }}">{{ $producto->label_estado }}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; font-size:13px">
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted)">Nombre</span>
-                        <span style="font-weight:500">Monitor LG 24"</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">SKU</span>
-                        <span style="font-family:monospace">PRD-001</span>
+                        <span style="font-weight:500">{{ $producto->nombre }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted)">Categoría</span>
-                        <span>Electrónica</span>
+                        <span>{{ $producto->categoria ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted)">Proveedor</span>
-                        <span>TechParts S.A.</span>
+                        <span>{{ $producto->proveedor->nombre ?? '—' }}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Precio de costo</span>
-                        <span>$250.00</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                    <div style="display:flex; justify-content:space-between; padding-bottom:4px">
                         <span style="color:var(--color-text-muted)">Precio de venta</span>
-                        <span style="font-weight:600; color:var(--color-primary)">$320.00</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between">
-                        <span style="color:var(--color-text-muted)">Margen</span>
-                        <span style="color:var(--color-success); font-weight:500">+28% ($70.00)</span>
+                        <span style="font-weight:600; color:var(--color-primary)">${{ number_format($producto->precio, 0, ',', '.') }}</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title" style="margin-bottom:12px">Descripción</div>
-                <p style="font-size:13px; color:var(--color-text-muted); margin:0; line-height:1.6">
-                    Monitor Full HD de 24 pulgadas con panel IPS, resolución 1920×1080, tiempo de respuesta 5ms. Ideal para oficina y diseño.
-                </p>
             </div>
         </div>
 
@@ -70,17 +53,24 @@
                 <div class="grid-2" style="gap:10px; margin-bottom:14px">
                     <div class="stat-card" style="padding:14px">
                         <div class="stat-label">Stock actual</div>
-                        <div class="stat-value" style="font-size:28px">15</div>
+                        <div class="stat-value" style="font-size:28px">{{ $producto->stock }}</div>
                     </div>
-                    <div class="stat-card" style="padding:14px">
-                        <div class="stat-label">Stock mínimo</div>
+                    <div class="stat-card" style="padding:14px; opacity:0.75">
+                        <div class="stat-label">Stock mínimo (Sugerido)</div>
                         <div class="stat-value" style="font-size:28px; color:var(--color-text-muted)">5</div>
                     </div>
                 </div>
+                @php
+                    $isRed = $producto->stock <= 5;
+                    $min = 20; // Límite %
+                    $porcentaje = min(($producto->stock / $min) * 100, 100);
+                @endphp
                 <div class="progress-bar-wrap">
-                    <div class="progress-bar-fill" style="width:75%"></div>
+                    <div class="progress-bar-fill" style="width:{{ $porcentaje }}%; background:{{ $isRed ? 'var(--color-danger)' : 'var(--color-success)' }}"></div>
                 </div>
-                <div style="font-size:11.5px; color:var(--color-text-muted); margin-top:6px">75% de capacidad óptima</div>
+                <div style="font-size:11.5px; color:var(--color-text-muted); margin-top:6px">
+                    {{ $isRed ? 'Nivel de inventario Crítico o Agotado' : 'Capacidad Óptima' }}
+                </div>
             </div>
 
             <div class="card">
@@ -89,31 +79,23 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th># Venta</th>
                                 <th>Fecha</th>
-                                <th>Cant.</th>
-                                <th>Total</th>
+                                <th>Cant. Vendida</th>
+                                <th>Total Parcial</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($ultimasVentas as $detalle)
                             <tr>
-                                <td style="font-family:monospace; font-size:12px; color:var(--color-text-muted)">#1042</td>
-                                <td>18/03/2026</td>
-                                <td>1</td>
-                                <td>$320.00</td>
+                                <td style="font-family:monospace; font-size:12px; color:var(--color-text-muted)">#{{ str_pad($detalle->venta_id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ $detalle->created_at->format('d/m/Y') }}</td>
+                                <td>{{ $detalle->cantidad }}</td>
+                                <td>${{ number_format($detalle->precio_unitario * $detalle->cantidad, 0, ',', '.') }}</td>
                             </tr>
-                            <tr>
-                                <td style="font-family:monospace; font-size:12px; color:var(--color-text-muted)">#1031</td>
-                                <td>15/03/2026</td>
-                                <td>2</td>
-                                <td>$640.00</td>
-                            </tr>
-                            <tr>
-                                <td style="font-family:monospace; font-size:12px; color:var(--color-text-muted)">#1018</td>
-                                <td>10/03/2026</td>
-                                <td>1</td>
-                                <td>$320.00</td>
-                            </tr>
+                            @empty
+                            <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--color-text-muted)">No hay ventas registradas</td></tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

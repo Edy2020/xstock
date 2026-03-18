@@ -1,10 +1,24 @@
 <x-app-layout :pageTitle="'Proveedores'">
 
     @if(session('success'))
-        <div class="alert alert-success" style="margin-bottom:16px">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            {{ session('success') }}
+        <div id="success-alert" class="alert alert-success" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; transition:opacity 0.3s ease">
+            <div style="display:flex; align-items:center; gap:10px">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="document.getElementById('success-alert').style.opacity='0'; setTimeout(()=>document.getElementById('success-alert').remove(), 300)" style="background:none; border:none; color:inherit; cursor:pointer; padding:0; display:flex; align-items:center; opacity:0.7">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
         </div>
+        <script>
+            setTimeout(() => {
+                const alertEl = document.getElementById('success-alert');
+                if (alertEl) {
+                    alertEl.style.opacity = '0';
+                    setTimeout(() => alertEl.remove(), 300);
+                }
+            }, 3000);
+        </script>
     @endif
 
     <div class="page-header">
@@ -68,7 +82,7 @@
                 </thead>
                 <tbody>
                     @foreach($proveedores as $prov)
-                    <tr>
+                    <tr style="cursor:pointer" onclick="if(!event.target.closest('.btn') && !event.target.closest('form')) window.location='{{ route('proveedores.show', $prov) }}'">
                         <td style="font-weight:500">{{ $prov->nombre }}</td>
                         <td class="col-hide-mobile" style="color:var(--color-text-muted)">{{ $prov->ruc ?? '—' }}</td>
                         <td class="col-hide-mobile" style="color:var(--color-text-muted)">{{ $prov->contacto ?? '—' }}</td>

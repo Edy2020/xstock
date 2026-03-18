@@ -1,47 +1,36 @@
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Update Password') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
+    <header style="margin-bottom:16px">
+        <h2 class="card-title">Actualizar Contraseña</h2>
+        <p class="card-subtitle">Asegúrate de que tu cuenta esté usando una contraseña larga y aleatoria para mantenerte seguro.</p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('password.update') }}" style="display:flex; flex-direction:column; gap:16px">
         @csrf
         @method('put')
 
-        <div>
-            <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
+        <div class="form-group">
+            <label for="update_password_current_password" class="form-label">Contraseña Actual</label>
+            <input type="password" id="update_password_current_password" name="current_password" class="form-input" autocomplete="current-password" />
+            @error('current_password', 'updatePassword') <span style="color:var(--color-danger); font-size:12px">{{ $message }}</span> @enderror
         </div>
 
-        <div>
-            <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+        <div class="form-group">
+            <label for="update_password_password" class="form-label">Nueva Contraseña</label>
+            <input type="password" id="update_password_password" name="password" class="form-input" autocomplete="new-password" />
+            @error('password', 'updatePassword') <span style="color:var(--color-danger); font-size:12px">{{ $message }}</span> @enderror
         </div>
 
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
+        <div class="form-group">
+            <label for="update_password_password_confirmation" class="form-label">Confirmar Contraseña</label>
+            <input type="password" id="update_password_password_confirmation" name="password_confirmation" class="form-input" autocomplete="new-password" />
+            @error('password_confirmation', 'updatePassword') <span style="color:var(--color-danger); font-size:12px">{{ $message }}</span> @enderror
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:8px">
+            <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
 
             @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)" style="font-size:13px; color:var(--color-success); margin:0">Guardado exitosamente.</p>
             @endif
         </div>
     </form>

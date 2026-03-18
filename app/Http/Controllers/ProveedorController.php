@@ -59,6 +59,12 @@ class ProveedorController extends Controller
             ->with('success', 'Proveedor "' . $request->nombre . '" añadido correctamente.');
     }
 
+    public function show(Proveedor $proveedor)
+    {
+        $productos = $proveedor->productos()->latest()->get();
+        return view('proveedores.show', compact('proveedor', 'productos'));
+    }
+
     public function edit(Proveedor $proveedor)
     {
         abort_unless(auth()->user()->hasPermission('proveedores.editar'), 403, 'No tienes permiso para editar proveedores.');

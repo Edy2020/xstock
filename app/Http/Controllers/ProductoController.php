@@ -44,7 +44,7 @@ class ProductoController extends Controller
         abort_unless(auth()->user()->hasPermission('productos.crear'), 403, 'No tienes permiso para crear productos.');
 
         $request->validate([
-            'nombre'       => 'required|string|max:255',
+            'nombre'       => 'required|string|max:255|unique:productos,nombre',
             'categoria'    => 'nullable|string|max:100',
             'precio'       => 'required|integer|min:0',
             'stock'        => 'required|integer|min:0',
@@ -52,6 +52,7 @@ class ProductoController extends Controller
             'proveedor_id' => 'nullable|exists:proveedores,id',
         ], [
             'nombre.required' => 'El nombre del producto es obligatorio.',
+            'nombre.unique'   => 'Ya existe un producto registrado con este mismo nombre.',
             'precio.required' => 'El precio es obligatorio.',
             'precio.integer'  => 'El precio debe ser un número entero (CLP).',
             'stock.required'  => 'El stock es obligatorio.',
@@ -77,7 +78,15 @@ class ProductoController extends Controller
 
     public function show(Producto $producto)
     {
-        return view('productos.show', compact('producto'));
+        $producto->load('proveedor');
+        
+        $ultimasVentas = \App\Models\DetalleVenta::where('producto_id', $producto->id)
+            ->with('venta')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('productos.show', compact('producto', 'ultimasVentas'));
     }
 
     public function edit(Producto $producto)
@@ -100,12 +109,14 @@ class ProductoController extends Controller
         abort_unless(auth()->user()->hasPermission('productos.editar'), 403, 'No tienes permiso para editar productos.');
 
         $validated = $request->validate([
-            'nombre'       => 'required|string|max:255',
+            'nombre'       => 'required|string|max:255|unique:productos,nombre,' . $producto->id,
             'categoria'    => 'nullable|string|max:100',
             'precio'       => 'required|integer|min:0',
             'stock'        => 'required|integer|min:0',
             'estado'       => 'required|in:activo,inactivo',
             'proveedor_id' => 'nullable|exists:proveedores,id',
+        ], [
+            'nombre.unique' => 'Ya existe otro producto registrado con este mismo nombre.',
         ]);
 
         $producto->update($validated);
@@ -119,7 +130,7 @@ class ProductoController extends Controller
             'ip_address' => request()->ip(),
         ]);
 
-        return redirect()->route('productos.edit', $producto->id)
+        return redirect()->route('productos.index')
             ->with('success', 'Producto actualizado exitosamente.');
     }
 

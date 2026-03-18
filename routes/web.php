@@ -42,8 +42,9 @@ Route::middleware('auth')->group(function () {
     });
 
     // Proveedores
-    Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)
-        ->except(['show']);
+    Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)->parameters([
+        'proveedores' => 'proveedor'
+    ]);
 
 
     // Estadísticas
