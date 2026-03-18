@@ -76,8 +76,8 @@
                     </thead>
                     <tbody>
                         @foreach($diasData as $d)
-                        <tr>
-                            <td style="text-transform:capitalize">{{ $d['dia'] }}</td>
+                        <tr class="{{ !empty($d['is_today']) ? 'highlight-today' : '' }}">
+                            <td style="text-transform:capitalize; {{ !empty($d['is_today']) ? 'font-weight:600; color:var(--color-primary)' : '' }}">{{ $d['dia'] }}</td>
                             <td>{{ $d['ventas'] }}</td>
                             <td style="font-weight:500">{{ $d['ing'] }}</td>
                             <td><span class="badge badge-gray" style="font-size:10.5px">—</span></td>

@@ -135,6 +135,7 @@ class ProveedorController extends Controller
         
         $agregados = 0;
         $omitidos = 0;
+        $nombresAgregados = [];
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
@@ -159,9 +160,31 @@ class ProveedorController extends Controller
                     'estado'    => in_array(strtolower(trim($row[7] ?? '')), ['activo', 'inactivo']) ? strtolower(trim($row[7])) : 'activo',
                 ]);
                 $agregados++;
+                if (count($nombresAgregados) < 300) {
+                    $nombresAgregados[] = "• " . $nombre;
+                }
             }
             fclose($handle);
             \Illuminate\Support\Facades\DB::commit();
+
+            $detalleStr = "Se importó masivamente un archivo CSV.\n";
+            $detalleStr .= "Total insertados exitosamente: {$agregados}.\n";
+            $detalleStr .= "Total omitidos (por nombre duplicado): {$omitidos}.\n\n";
+            if ($agregados > 0) {
+                $detalleStr .= "Proveedores cargados en esta sesión:\n";
+                $detalleStr .= implode("\n", $nombresAgregados);
+                if ($agregados > 300) {
+                    $detalleStr .= "\n... y " . ($agregados - 300) . " proveedores más.";
+                }
+            }
+
+            LogActividad::create([
+                'user_id' => auth()->id(),
+                'accion' => 'Importación CSV',
+                'modulo' => 'Proveedores',
+                'detalle' => $detalleStr,
+                'ip_address' => request()->ip(),
+            ]);
 
             return redirect()->route('proveedores.index')
                 ->with('success', "Importación completada: {$agregados} proveedores añadidos, {$omitidos} omitidos por nombre duplicado.");

@@ -54,7 +54,7 @@
             </thead>
             <tbody>
                 @forelse($logs as $l)
-                <tr>
+                <tr class="hoverable" style="cursor:pointer" onclick="window.location='{{ route('historial.show', $l) }}'">
                     <td style="color:var(--color-text-muted); font-family:monospace; font-size:11px">#{{ str_pad($l->id, 5, '0', STR_PAD_LEFT) }}</td>
                     <td>
                         <div style="display:flex; align-items:center; gap:7px">

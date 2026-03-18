@@ -25,6 +25,7 @@ class LogActividad extends Model
     {
         return match($this->accion) {
             'Creación' => 'badge-blue',
+            'Importación CSV' => 'badge-blue',
             'Venta' => 'badge-green',
             'Actualización' => 'badge-yellow',
             'Eliminación' => 'badge-red',

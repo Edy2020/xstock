@@ -33,16 +33,18 @@ class EstadisticaController extends Controller
         $productosCriticos = Producto::where('stock', '<=', 5)->orderBy('stock', 'asc')->get();
         $stockCritico = $productosCriticos->count();
 
-        // Ventas por día (últimos 7 días)
+        // Ventas por día (Esta semana, de Lunes a Domingo)
+        $inicioSemana = Carbon::now()->startOfWeek();
         $diasData = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
+        for ($i = 0; $i <= 6; $i++) {
+            $date = $inicioSemana->copy()->addDays($i);
             $ventas = Venta::whereDate('created_at', $date)->count();
             $ingresos = Venta::whereDate('created_at', $date)->sum('total');
             $diasData->push([
-                'dia' => $date->isToday() ? $date->translatedFormat('l') . ' (hoy)' : $date->translatedFormat('l'),
+                'dia' => ucfirst($date->locale('es')->translatedFormat('l')) . ($date->isToday() ? ' (Hoy)' : ''),
                 'ventas' => $ventas,
                 'ing' => '$' . number_format($ingresos, 0, ',', '.'),
+                'is_today' => $date->isToday(),
             ]);
         }
 
@@ -82,7 +84,7 @@ class EstadisticaController extends Controller
             $ingresosSum = Venta::whereBetween('created_at', [$start, $end])->sum('total');
             
             $semanasData->push([
-                'sem' => 'Sem ' . (4 - $i) . ' (' . $start->format('d M') . ' — ' . $end->format('d M') . ')',
+                'sem' => 'Sem ' . (4 - $i) . ' (' . ucfirst($start->locale('es')->translatedFormat('d M')) . ' — ' . ucfirst($end->locale('es')->translatedFormat('d M')) . ')',
                 'ventas' => $ventasCount,
                 'ing' => '$' . number_format($ingresosSum, 0, ',', '.'),
             ]);

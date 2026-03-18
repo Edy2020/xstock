@@ -38,4 +38,10 @@ class HistorialController extends Controller
 
         return view('historial.index', compact('logs'));
     }
+
+    public function show(LogActividad $logActividad)
+    {
+        $logActividad->load('user');
+        return view('historial.show', compact('logActividad'));
+    }
 }

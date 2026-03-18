@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
     // Historial / Logs
     Route::get('/historial', [\App\Http\Controllers\HistorialController::class, 'index'])->name('historial.index')->middleware('permission:historial.ver');
+    Route::get('/historial/{logActividad}', [\App\Http\Controllers\HistorialController::class, 'show'])->name('historial.show')->middleware('permission:historial.ver');
 
     // Usuarios
     Route::resource('/usuarios', \App\Http\Controllers\UsuarioController::class)->except(['create', 'show', 'edit'])->middleware('permission:usuarios.gestionar');
