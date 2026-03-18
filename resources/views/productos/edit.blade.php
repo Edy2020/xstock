@@ -51,16 +51,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="proveedor_id">Proveedor</label>
-                        <select id="proveedor_id" name="proveedor_id" class="form-select">
-                            <option value="">Sin proveedor</option>
+                        <label class="form-label" for="proveedor_nombre">Proveedor</label>
+                        <input type="text" id="proveedor_nombre" name="proveedor_nombre" class="form-input"
+                            value="{{ old('proveedor_nombre', $producto->proveedor?->nombre) }}" placeholder="Escribe o selecciona un proveedor..."
+                            list="proveedores-lista">
+                        <datalist id="proveedores-lista">
                             @foreach($proveedores as $proveedor)
-                                <option value="{{ $proveedor->id }}"
-                                    {{ old('proveedor_id', $producto->proveedor_id) == $proveedor->id ? 'selected' : '' }}>
-                                    {{ $proveedor->nombre }}
-                                </option>
+                                <option value="{{ $proveedor->nombre }}">
                             @endforeach
-                        </select>
+                        </datalist>
                     </div>
 
                     <div class="form-group">

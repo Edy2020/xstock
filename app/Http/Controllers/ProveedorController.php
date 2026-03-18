@@ -115,4 +115,60 @@ class ProveedorController extends Controller
         return redirect()->route('proveedores.index')
             ->with('success', 'Proveedor "' . $nombre . '" eliminado.');
     }
+
+    public function import(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('proveedores.crear'), 403, 'No tienes permiso para importar proveedores.');
+
+        $request->validate([
+            'archivo_csv' => 'required|file|mimes:csv,txt|max:5120',
+        ], [
+            'archivo_csv.required' => 'Debe seleccionar un archivo CSV.',
+            'archivo_csv.mimes'    => 'El archivo debe tener formato .csv o .txt.',
+        ]);
+
+        $file = $request->file('archivo_csv');
+        $handle = fopen($file->getRealPath(), "r");
+        
+        // Saltamos la primera fila de cabeceras
+        fgetcsv($handle, 1000, ",");
+        
+        $agregados = 0;
+        $omitidos = 0;
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                if (empty(trim($row[0] ?? ''))) continue;
+
+                $nombre = trim($row[0]);
+                // Verificamos unicidad de nombre antes de insertar
+                if (Proveedor::where('nombre', $nombre)->exists()) {
+                    $omitidos++;
+                    continue;
+                }
+
+                Proveedor::create([
+                    'nombre'    => $nombre,
+                    'ruc'       => trim($row[1] ?? null),
+                    'contacto'  => trim($row[2] ?? null),
+                    'email'     => filter_var(trim($row[3] ?? ''), FILTER_VALIDATE_EMAIL) ? trim($row[3]) : null,
+                    'telefono'  => trim($row[4] ?? null),
+                    'direccion' => trim($row[5] ?? null),
+                    'notas'     => trim($row[6] ?? null),
+                    'estado'    => in_array(strtolower(trim($row[7] ?? '')), ['activo', 'inactivo']) ? strtolower(trim($row[7])) : 'activo',
+                ]);
+                $agregados++;
+            }
+            fclose($handle);
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('proveedores.index')
+                ->with('success', "Importación completada: {$agregados} proveedores añadidos, {$omitidos} omitidos por nombre duplicado.");
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            fclose($handle);
+            return back()->withErrors(['error' => 'Error estructural al leer CSV. Asegúrese de que tenga el formato correcto: Nombre, RUC/NIF, Contacto, Email, Teléfono, Dirección, Notas, Estado.']);
+        }
+    }
 }

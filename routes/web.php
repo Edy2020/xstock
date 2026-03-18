@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     // ─── GESTIÓN ─────────────────────────────────────────────
 
     // Productos
+    Route::post('productos/import', [\App\Http\Controllers\ProductoController::class, 'import'])->name('productos.import');
     Route::resource('productos', \App\Http\Controllers\ProductoController::class);
 
 
@@ -42,6 +43,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Proveedores
+    Route::post('proveedores/import', [\App\Http\Controllers\ProveedorController::class, 'import'])->name('proveedores.import');
     Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)->parameters([
         'proveedores' => 'proveedor'
     ]);

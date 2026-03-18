@@ -24,13 +24,23 @@
     <div class="page-header">
         <div class="page-header-left">
             <h1>Productos</h1>
-            <p>{{ $productos->count() }} producto(s) registrado(s)</p>
+            <p>Gestiona el inventario, precios y stock</p>
         </div>
         @if(auth()->user()->hasPermission('productos.crear'))
-        <a href="{{ route('productos.create') }}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo Producto
-        </a>
+        <div style="display:flex; gap:8px">
+            <form action="{{ route('productos.import') }}" method="POST" enctype="multipart/form-data" id="form-import" style="display:none">
+                @csrf
+                <input type="file" name="archivo_csv" id="archivo_csv" accept=".csv" onchange="document.getElementById('form-import').submit()">
+            </form>
+            <button class="btn btn-secondary" onclick="document.getElementById('archivo_csv').click()" title="Formato esperado: Nombre, Descripción, Categoría, Proveedor, Precio, Stock, Estado">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Importar CSV
+            </button>
+            <a href="{{ route('productos.create') }}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nuevo Producto
+            </a>
+        </div>
         @endif
     </div>
 
