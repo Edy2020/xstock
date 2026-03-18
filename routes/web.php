@@ -48,12 +48,12 @@ Route::middleware('auth')->group(function () {
 
 
     // Estadísticas
-    Route::get('/estadisticas', fn() => view('estadisticas.index'))->name('estadisticas.index');
+    Route::get('/estadisticas', [\App\Http\Controllers\EstadisticaController::class, 'index'])->name('estadisticas.index');
 
     // ─── ADMINISTRACIÓN ──────────────────────────────────────
 
     // Historial / Logs
-    Route::get('/historial', fn() => view('historial.index'))->name('historial.index');
+    Route::get('/historial', [\App\Http\Controllers\HistorialController::class, 'index'])->name('historial.index');
 
     // Usuarios
     Route::get('/usuarios', fn() => view('usuarios.index'))->name('usuarios.index');

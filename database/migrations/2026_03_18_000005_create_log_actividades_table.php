@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('log_actividades', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('accion'); // e.g., 'Creación', 'Actualización', 'Eliminación', 'Venta', 'Login'
+            $table->string('modulo'); // e.g., 'Productos', 'Ventas', 'Proveedores', 'Sistema'
+            $table->text('detalle');
+            $table->string('ip_address')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('log_actividades');
+    }
+};

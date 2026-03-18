@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Venta;
 use App\Models\DetalleVenta;
 use App\Models\Producto;
+use App\Models\LogActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -127,7 +128,19 @@ class VentaController extends Controller
                 }
             }
             
+            $ventaId = $venta->id;
+            $totalOriginal = $venta->total;
+
             $venta->delete();
+
+            // Registrar Historial
+            LogActividad::create([
+                'user_id' => auth()->id(),
+                'accion' => 'Eliminación',
+                'modulo' => 'Ventas',
+                'detalle' => 'Anuló/Eliminó venta #' . $ventaId . ' de $' . number_format($totalOriginal, 0, ',', '.'),
+                'ip_address' => request()->ip(),
+            ]);
             
             DB::commit();
             

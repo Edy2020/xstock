@@ -11,30 +11,33 @@
         </button>
     </div>
 
-    {{-- Filtros --}}
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap">
+    {{-- Filtros Dinámicos --}}
+    <form method="GET" action="{{ route('historial.index') }}" id="form-filters" style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap">
         <div class="search-bar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Buscar por usuario o acción...">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por usuario, IP o detalle..." onblur="document.getElementById('form-filters').submit()" onkeydown="if(event.key === 'Enter') document.getElementById('form-filters').submit()">
         </div>
-        <select class="form-select" style="width:auto; padding:7px 11px">
+        <select name="modulo" class="form-select" style="width:auto; padding:7px 11px" onchange="document.getElementById('form-filters').submit()">
             <option>Todos los módulos</option>
-            <option>Productos</option>
-            <option>Ventas</option>
-            <option>Proveedores</option>
-            <option>Usuarios</option>
-            <option>Roles</option>
+            <option {{ request('modulo')=='Productos'?'selected':'' }}>Productos</option>
+            <option {{ request('modulo')=='Ventas'?'selected':'' }}>Ventas</option>
+            <option {{ request('modulo')=='Proveedores'?'selected':'' }}>Proveedores</option>
+            <option {{ request('modulo')=='Sistema'?'selected':'' }}>Sistema</option>
         </select>
-        <select class="form-select" style="width:auto; padding:7px 11px">
+        <select name="accion" class="form-select" style="width:auto; padding:7px 11px" onchange="document.getElementById('form-filters').submit()">
             <option>Todas las acciones</option>
-            <option>Creación</option>
-            <option>Actualización</option>
-            <option>Eliminación</option>
-            <option>Login</option>
-            <option>Logout</option>
+            <option {{ request('accion')=='Creación'?'selected':'' }}>Creación</option>
+            <option {{ request('accion')=='Actualización'?'selected':'' }}>Actualización</option>
+            <option {{ request('accion')=='Eliminación'?'selected':'' }}>Eliminación</option>
+            <option {{ request('accion')=='Venta'?'selected':'' }}>Venta</option>
+            <option {{ request('accion')=='Login'?'selected':'' }}>Login</option>
         </select>
-        <input type="date" class="form-input" style="width:auto; padding:7px 11px">
-    </div>
+        <input type="date" name="date" value="{{ request('date') }}" class="form-input" style="width:auto; padding:7px 11px" onchange="document.getElementById('form-filters').submit()">
+        
+        @if(request()->anyFilled(['search', 'modulo', 'accion', 'date']))
+            <a href="{{ route('historial.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+        @endif
+    </form>
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -50,49 +53,54 @@
                 </tr>
             </thead>
             <tbody>
-                @php
-                $logs = [
-                    ['id'=>1,'user'=>'Admin','accion'=>'Creación','modulo'=>'Productos','detalle'=>'Creó producto "Monitor LG 24"','ip'=>'192.168.1.10','fecha'=>'18/03/2026 13:22:05','clase'=>'badge-blue'],
-                    ['id'=>2,'user'=>'Admin','accion'=>'Venta','modulo'=>'Ventas','detalle'=>'Registró venta #1042 por $320.00','ip'=>'192.168.1.10','fecha'=>'18/03/2026 13:10:14','clase'=>'badge-green'],
-                    ['id'=>3,'user'=>'Carlos R.','accion'=>'Actualización','modulo'=>'Productos','detalle'=>'Actualizó stock de "Teclado Mecánico"','ip'=>'192.168.1.22','fecha'=>'18/03/2026 11:45:30','clase'=>'badge-yellow'],
-                    ['id'=>4,'user'=>'Admin','accion'=>'Login','modulo'=>'Sistema','detalle'=>'Inicio de sesión exitoso','ip'=>'192.168.1.10','fecha'=>'18/03/2026 09:00:01','clase'=>'badge-gray'],
-                    ['id'=>5,'user'=>'Carlos R.','accion'=>'Login','modulo'=>'Sistema','detalle'=>'Inicio de sesión exitoso','ip'=>'192.168.1.22','fecha'=>'18/03/2026 09:05:12','clase'=>'badge-gray'],
-                    ['id'=>6,'user'=>'Admin','accion'=>'Eliminación','modulo'=>'Proveedores','detalle'=>'Eliminó proveedor "CableFast S.A."','ip'=>'192.168.1.10','fecha'=>'17/03/2026 17:30:44','clase'=>'badge-red'],
-                    ['id'=>7,'user'=>'Admin','accion'=>'Creación','modulo'=>'Usuarios','detalle'=>'Creó usuario "Carlos Rodríguez"','ip'=>'192.168.1.10','fecha'=>'17/03/2026 10:15:22','clase'=>'badge-blue'],
-                    ['id'=>8,'user'=>'Admin','accion'=>'Actualización','modulo'=>'Roles','detalle'=>'Modificó permisos del rol "Vendedor"','ip'=>'192.168.1.10','fecha'=>'17/03/2026 09:40:00','clase'=>'badge-yellow'],
-                ];
-                @endphp
-                @foreach($logs as $l)
+                @forelse($logs as $l)
                 <tr>
-                    <td style="color:var(--color-text-muted); font-family:monospace; font-size:11px">#{{ $l['id'] }}</td>
+                    <td style="color:var(--color-text-muted); font-family:monospace; font-size:11px">#{{ str_pad($l->id, 5, '0', STR_PAD_LEFT) }}</td>
                     <td>
                         <div style="display:flex; align-items:center; gap:7px">
                             <div style="width:24px; height:24px; border-radius:50%; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0">
-                                {{ strtoupper(substr($l['user'],0,1)) }}
+                                {{ $l->user ? strtoupper(substr($l->user->name, 0, 1)) : 'S' }}
                             </div>
-                            <span style="font-weight:500">{{ $l['user'] }}</span>
+                            <span style="font-weight:500">{{ $l->user ? $l->user->name : 'Sistema/Invitado' }}</span>
                         </div>
                     </td>
-                    <td><span class="badge {{ $l['clase'] }}">{{ $l['accion'] }}</span></td>
-                    <td>{{ $l['modulo'] }}</td>
-                    <td style="color:var(--color-text-muted); font-size:12.5px">{{ $l['detalle'] }}</td>
-                    <td style="font-family:monospace; font-size:11px; color:var(--color-text-muted)">{{ $l['ip'] }}</td>
-                    <td style="color:var(--color-text-muted); font-size:12px; white-space:nowrap">{{ $l['fecha'] }}</td>
+                    <td><span class="badge {{ $l->badgeClass }}">{{ $l->accion }}</span></td>
+                    <td>{{ $l->modulo }}</td>
+                    <td style="color:var(--color-text-muted); font-size:12.5px">{{ $l->detalle }}</td>
+                    <td style="font-family:monospace; font-size:11px; color:var(--color-text-muted)">{{ $l->ip_address ?? '—' }}</td>
+                    <td style="color:var(--color-text-muted); font-size:12px; white-space:nowrap">{{ $l->created_at->format('d/m/Y H:i:s') }}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:40px; color:var(--color-text-muted)">
+                        No hay ninguna actividad registrada aún o ninguna coincide con los filtros.
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    <div class="pagination">
-        <span style="color:var(--color-text-muted); font-size:12px; margin-right:8px">Mostrando 8 de 3,842 registros</span>
-        <button class="pg-btn">‹</button>
-        <button class="pg-btn active">1</button>
-        <button class="pg-btn">2</button>
-        <button class="pg-btn">3</button>
-        <button class="pg-btn">...</button>
-        <button class="pg-btn">384</button>
-        <button class="pg-btn">›</button>
+    @if(isset($logs) && $logs->hasPages())
+    <div class="pagination" style="margin-top: 20px">
+        <span style="color:var(--color-text-muted); font-size:12px; margin-right:8px">
+            Mostrando {{ $logs->firstItem() }} - {{ $logs->lastItem() }} de {{ $logs->total() }} registros
+        </span>
+        
+        @if($logs->onFirstPage())
+            <button class="pg-btn" disabled>‹</button>
+        @else
+            <a href="{{ $logs->previousPageUrl() }}" class="pg-btn">‹</a>
+        @endif
+        
+        <button class="pg-btn active">{{ $logs->currentPage() }}</button>
+
+        @if($logs->hasMorePages())
+            <a href="{{ $logs->nextPageUrl() }}" class="pg-btn">›</a>
+        @else
+            <button class="pg-btn" disabled>›</button>
+        @endif
     </div>
+    @endif
 
 </x-app-layout>

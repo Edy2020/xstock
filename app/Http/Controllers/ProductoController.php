@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\LogActividad;
 use Illuminate\Http\Request;
 
 class ProductoController extends Controller
@@ -55,7 +56,16 @@ class ProductoController extends Controller
             'proveedor_id.exists' => 'El proveedor seleccionado no es válido.',
         ]);
 
-        Producto::create($request->only('nombre', 'categoria', 'precio', 'stock', 'estado', 'proveedor_id'));
+        $producto = Producto::create($request->only('nombre', 'categoria', 'precio', 'stock', 'estado', 'proveedor_id'));
+
+        // Registrar Historial
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Creación',
+            'modulo' => 'Productos',
+            'detalle' => 'Registró el producto: ' . $producto->nombre,
+            'ip_address' => request()->ip(),
+        ]);
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto "' . $request->nombre . '" añadido correctamente.');
@@ -81,7 +91,7 @@ class ProductoController extends Controller
 
     public function update(Request $request, Producto $producto)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre'       => 'required|string|max:255',
             'categoria'    => 'nullable|string|max:100',
             'precio'       => 'required|integer|min:0',
@@ -90,16 +100,34 @@ class ProductoController extends Controller
             'proveedor_id' => 'nullable|exists:proveedores,id',
         ]);
 
-        $producto->update($request->only('nombre', 'categoria', 'precio', 'stock', 'estado', 'proveedor_id'));
+        $producto->update($validated);
 
-        return redirect()->route('productos.index')
-            ->with('success', 'Producto actualizado correctamente.');
+        // Registrar Historial
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Actualización',
+            'modulo' => 'Productos',
+            'detalle' => 'Actualizó el producto: ' . $producto->nombre,
+            'ip_address' => request()->ip(),
+        ]);
+
+        return redirect()->route('productos.edit', $producto->id)
+            ->with('success', 'Producto actualizado exitosamente.');
     }
 
     public function destroy(Producto $producto)
     {
         $nombre = $producto->nombre;
         $producto->delete();
+
+        // Registrar Historial
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Eliminación',
+            'modulo' => 'Productos',
+            'detalle' => 'Eliminó el producto: ' . $nombre,
+            'ip_address' => request()->ip(),
+        ]);
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto "' . $nombre . '" eliminado.');

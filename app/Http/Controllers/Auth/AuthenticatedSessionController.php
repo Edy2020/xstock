@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\LogActividad;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,6 +29,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Login',
+            'modulo' => 'Sistema',
+            'detalle' => 'Inicio de sesión exitoso',
+            'ip_address' => request()->ip(),
+        ]);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -36,6 +45,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $userId = auth()->id();
+
+        LogActividad::create([
+            'user_id' => $userId,
+            'accion' => 'Login', // Keeping the generic badge colour, 'Logout' isn't defined explicitly in DB badge as red but we can say "Logout"
+            'modulo' => 'Sistema',
+            'detalle' => 'Cierre de sesión',
+            'ip_address' => request()->ip(),
+        ]);
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

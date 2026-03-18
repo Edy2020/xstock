@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proveedor;
+use App\Models\LogActividad;
 use Illuminate\Http\Request;
 
 class ProveedorController extends Controller
@@ -87,6 +88,15 @@ class ProveedorController extends Controller
         $proveedor->productos()->update(['proveedor_id' => null]);
         $nombre = $proveedor->nombre;
         $proveedor->delete();
+
+        // Registrar Historial
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Eliminación',
+            'modulo' => 'Proveedores',
+            'detalle' => 'Eliminó al proveedor: ' . $nombre,
+            'ip_address' => request()->ip(),
+        ]);
 
         return redirect()->route('proveedores.index')
             ->with('success', 'Proveedor "' . $nombre . '" eliminado.');
