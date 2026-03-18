@@ -618,6 +618,42 @@ table.data-table tbody td { padding: 10px 14px; color: var(--color-text); }
     background: var(--color-primary);
 }
 
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    gap: 8px;
+    color: var(--color-text-muted);
+}
+
+.empty-state svg {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px;
+    max-width: 40px;
+    opacity: 0.35;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.empty-state h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.empty-state p {
+    font-size: 13px;
+    margin: 0;
+    color: var(--color-text-muted);
+}
+
+
 /* ============================
    RESPONSIVE — TABLET (≤1100px)
    ============================ */
