@@ -18,52 +18,51 @@
         </a>
     </div>
 
-    {{-- Filtros --}}
-    <form method="GET" action="{{ route('productos.index') }}">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
-            <div class="search-bar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" name="buscar" placeholder="Buscar producto..." value="{{ request('buscar') }}">
-            </div>
-            <select name="categoria" class="form-select" style="width:auto; padding:7px 11px" onchange="this.form.submit()">
-                <option value="">Todas las categorías</option>
-                @foreach($categorias as $cat)
-                    <option value="{{ $cat }}" {{ request('categoria') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                @endforeach
-            </select>
-            <select name="proveedor_id" class="form-select" style="width:auto; padding:7px 11px" onchange="this.form.submit()">
-                <option value="">Todos los proveedores</option>
-                @foreach($proveedores as $prov)
-                    <option value="{{ $prov->id }}" {{ request('proveedor_id') == $prov->id ? 'selected' : '' }}>{{ $prov->nombre }}</option>
-                @endforeach
-            </select>
-            <select name="estado" class="form-select" style="width:auto; padding:7px 11px" onchange="this.form.submit()">
-                <option value="">Todos los estados</option>
-                <option value="activo"   {{ request('estado') === 'activo'   ? 'selected' : '' }}>Activo</option>
-                <option value="inactivo" {{ request('estado') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-            </select>
-            @if(request()->hasAny(['buscar','categoria','estado','proveedor_id']))
-                <a href="{{ route('productos.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
-            @endif
+    {{-- Filtros (Client-side JS) --}}
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
+        <div class="search-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="filter-buscar" placeholder="Buscar producto...">
         </div>
-    </form>
+        
+        <select id="filter-categoria" class="form-select" style="width:auto; padding:7px 11px">
+            <option value="">Todas las categorías</option>
+            @foreach($categorias as $cat)
+                <option value="{{ strtolower($cat) }}">{{ $cat }}</option>
+            @endforeach
+        </select>
+        
+        <select id="filter-proveedor" class="form-select" style="width:auto; padding:7px 11px">
+            <option value="">Todos los proveedores</option>
+            @foreach($proveedores as $prov)
+                <option value="{{ $prov->id }}">{{ $prov->nombre }}</option>
+            @endforeach
+        </select>
+        
+        <select id="filter-estado" class="form-select" style="width:auto; padding:7px 11px">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+        </select>
+        
+        <button id="btn-limpiar" class="btn btn-secondary btn-sm" style="display:none">Limpiar</button>
+    </div>
 
+    {{-- Vista cuando no hay ningún producto en la tabla (Base de datos vacía) --}}
     @if($productos->isEmpty())
         <div class="card">
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                 <h3>No hay productos</h3>
-                <p>{{ request()->hasAny(['buscar','categoria','estado','proveedor_id']) ? 'Ningún producto coincide con los filtros.' : 'Añade tu primer producto para comenzar.' }}</p>
-                @if(!request()->hasAny(['buscar','categoria','estado','proveedor_id']))
-                    <a href="{{ route('productos.create') }}" class="btn btn-primary" style="margin-top:8px">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Añadir Producto
-                    </a>
-                @endif
+                <p>Añade tu primer producto para comenzar.</p>
+                <a href="{{ route('productos.create') }}" class="btn btn-primary" style="margin-top:8px">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Añadir Producto
+                </a>
             </div>
         </div>
     @else
-        <div class="table-wrapper">
+        <div class="table-wrapper" id="table-container">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -76,9 +75,13 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="productos-tbody">
                     @foreach($productos as $producto)
-                    <tr>
+                    <tr class="producto-row"
+                        data-nombre="{{ strtolower($producto->nombre) }}"
+                        data-categoria="{{ strtolower($producto->categoria ?? '') }}"
+                        data-proveedor="{{ $producto->proveedor_id ?? '' }}"
+                        data-estado="{{ $producto->estado }}">
                         <td style="font-weight:500">{{ $producto->nombre }}</td>
                         <td>{{ $producto->categoria ?? '—' }}</td>
                         <td style="color:var(--color-text-muted)">{{ $producto->proveedor?->nombre ?? '—' }}</td>
@@ -100,6 +103,83 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Vista cuando los filtros restan todos los resultados --}}
+        <div class="card" id="no-results-state" style="display:none">
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <h3>No se encontraron resultados</h3>
+                <p>Ningún producto coincide con los filtros de búsqueda aplicados.</p>
+                <button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('btn-limpiar').click()">Limpiar filtros</button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Script de filtrado en cliente --}}
+    @if($productos->isNotEmpty())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputBuscar = document.getElementById('filter-buscar');
+            const selectCategoria = document.getElementById('filter-categoria');
+            const selectProveedor = document.getElementById('filter-proveedor');
+            const selectEstado = document.getElementById('filter-estado');
+            const btnLimpiar = document.getElementById('btn-limpiar');
+            
+            const rowElements = document.querySelectorAll('.producto-row');
+            const tableContainer = document.getElementById('table-container');
+            const noResultsState = document.getElementById('no-results-state');
+
+            function filterTable() {
+                const term = inputBuscar.value.toLowerCase().trim();
+                const cat = selectCategoria.value.toLowerCase();
+                const prov = selectProveedor.value;
+                const est = selectEstado.value;
+
+                let hasVisibleRows = false;
+                const isFiltered = term !== '' || cat !== '' || prov !== '' || est !== '';
+
+                btnLimpiar.style.display = isFiltered ? 'inline-flex' : 'none';
+
+                rowElements.forEach(row => {
+                    const rowName = row.dataset.nombre;
+                    const rowCat = row.dataset.categoria;
+                    const rowProv = row.dataset.proveedor;
+                    const rowEst = row.dataset.estado;
+
+                    const matchesTerm = term === '' || rowName.includes(term);
+                    const matchesCat = cat === '' || rowCat === cat;
+                    const matchesProv = prov === '' || rowProv === prov;
+                    const matchesEst = est === '' || rowEst === est;
+
+                    if (matchesTerm && matchesCat && matchesProv && matchesEst) {
+                        row.style.display = '';
+                        hasVisibleRows = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (tableContainer && noResultsState) {
+                    tableContainer.style.display = hasVisibleRows ? '' : 'none';
+                    noResultsState.style.display = hasVisibleRows ? 'none' : 'block';
+                }
+            }
+
+            inputBuscar.addEventListener('input', filterTable);
+            selectCategoria.addEventListener('change', filterTable);
+            selectProveedor.addEventListener('change', filterTable);
+            selectEstado.addEventListener('change', filterTable);
+
+            btnLimpiar.addEventListener('click', (e) => {
+                e.preventDefault();
+                inputBuscar.value = '';
+                selectCategoria.value = '';
+                selectProveedor.value = '';
+                selectEstado.value = '';
+                filterTable();
+            });
+        });
+    </script>
     @endif
 
 </x-app-layout>

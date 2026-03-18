@@ -35,10 +35,11 @@ Route::middleware('auth')->group(function () {
 
     // Ventas
     Route::prefix('ventas')->name('ventas.')->group(function () {
-        Route::get('/',        fn() => view('ventas.index'))->name('index');
-        Route::get('/nueva',   fn() => view('ventas.create'))->name('create');
-        Route::post('/',       fn() => redirect()->route('ventas.index'))->name('store');
-        Route::get('/{id}',    fn($id) => view('ventas.index'))->name('show');
+        Route::get('/',        [\App\Http\Controllers\VentaController::class, 'index'])->name('index');
+        Route::get('/nueva',   [\App\Http\Controllers\VentaController::class, 'create'])->name('create');
+        Route::post('/',       [\App\Http\Controllers\VentaController::class, 'store'])->name('store');
+        Route::get('/{venta}', [\App\Http\Controllers\VentaController::class, 'show'])->name('show');
+        Route::delete('/{venta}', [\App\Http\Controllers\VentaController::class, 'destroy'])->name('destroy');
     });
 
     // Proveedores

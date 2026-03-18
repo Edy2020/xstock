@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Venta;
+use App\Models\DetalleVenta;
+use App\Models\Producto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class VentaController extends Controller
+{
+    public function index()
+    {
+        $ventas = Venta::with('detalles')->latest()->get();
+        return view('ventas.index', compact('ventas'));
+    }
+
+    public function create()
+    {
+        // Solo enviar productos activos y con stock > 0
+        $productos = Producto::where('estado', 'activo')
+            ->where('stock', '>', 0)
+            ->orderBy('nombre')
+            ->get();
+            
+        return view('ventas.create', compact('productos'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'metodo_pago' => 'required|string|in:Efectivo,Tarjeta de crédito,Tarjeta de débito,Transferencia',
+            'notas'       => 'nullable|string',
+            'productos'   => 'required|string', // Se espera un JSON string desde el JS
+        ]);
+
+        $productosJson = json_decode($request->productos, true);
+
+        if (empty($productosJson)) {
+            return back()->withErrors(['error' => 'Debe añadir al menos un producto a la venta.'])->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $subtotalVenta = 0;
+            $descuentoTotalVenta = 0;
+            $totalVenta = 0;
+
+            // 1. Crear Venta base
+            $venta = Venta::create([
+                'subtotal'        => 0,
+                'descuento_total' => 0,
+                'total'           => 0,
+                'metodo_pago'     => $request->metodo_pago,
+                'notas'           => $request->notas,
+            ]);
+
+            // 2. Procesar cada detalle y descontar stock
+            foreach ($productosJson as $item) {
+                // Bloquear la fila del producto para evitar lecturas concurrentes problemáticas
+                $producto = Producto::where('id', $item['id'])->lockForUpdate()->first();
+
+                if (!$producto || $producto->stock < $item['cantidad']) {
+                    throw new \Exception("Stock insuficiente para: " . ($producto ? $producto->nombre : 'Producto desconocido'));
+                }
+
+                $cantidad = (int) $item['cantidad'];
+                $precioUnitario = (int) $producto->precio;
+                $descuentoPorcentaje = (int) ($item['descuento'] ?? 0);
+                
+                $montoDescuento = ($precioUnitario * $cantidad) * ($descuentoPorcentaje / 100);
+                $subtotalItem = ($precioUnitario * $cantidad) - $montoDescuento;
+
+                DetalleVenta::create([
+                    'venta_id'             => $venta->id,
+                    'producto_id'          => $producto->id,
+                    'producto_nombre'      => $producto->nombre,
+                    'cantidad'             => $cantidad,
+                    'precio_unitario'      => $precioUnitario,
+                    'descuento_porcentaje' => $descuentoPorcentaje,
+                    'subtotal'             => $subtotalItem,
+                ]);
+
+                // Descontar stock
+                $producto->decrement('stock', $cantidad);
+
+                $subtotalVenta += ($precioUnitario * $cantidad);
+                $descuentoTotalVenta += $montoDescuento;
+                $totalVenta += $subtotalItem;
+            }
+
+            // 3. Actualizar totales de la Venta final
+            $venta->update([
+                'subtotal'        => $subtotalVenta,
+                'descuento_total' => $descuentoTotalVenta,
+                'total'           => $totalVenta,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('ventas.index')
+                ->with('success', 'Venta registrada exitosamente. Total: $ ' . number_format($totalVenta, 0, ',', '.'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al procesar la venta: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    public function show($id)
+    {
+        $venta = Venta::with('detalles')->findOrFail($id);
+        return view('ventas.show', compact('venta'));
+    }
+
+    public function destroy(Venta $venta)
+    {
+        // Cancelar venta y revertir stock
+        try {
+            DB::beginTransaction();
+            
+            foreach ($venta->detalles as $detalle) {
+                if ($detalle->producto_id) {
+                    Producto::where('id', $detalle->producto_id)->increment('stock', $detalle->cantidad);
+                }
+            }
+            
+            $venta->delete();
+            
+            DB::commit();
+            
+            return redirect()->route('ventas.index')->with('success', 'Venta anulada y stock devuelto exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al anular la venta: ' . $e->getMessage()]);
+        }
+    }
+}

@@ -8,27 +8,9 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Producto::with('proveedor');
-
-        if ($request->filled('buscar')) {
-            $query->where('nombre', 'like', '%' . $request->buscar . '%');
-        }
-
-        if ($request->filled('categoria')) {
-            $query->where('categoria', $request->categoria);
-        }
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-
-        if ($request->filled('proveedor_id')) {
-            $query->where('proveedor_id', $request->proveedor_id);
-        }
-
-        $productos = $query->latest()->get();
+        $productos = Producto::with('proveedor')->latest()->get();
 
         $categorias = Producto::select('categoria')
             ->distinct()
