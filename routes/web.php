@@ -15,9 +15,8 @@ Route::get('/', function () {
 });
 
 // Dashboard principal
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
 // Rutas protegidas
 Route::middleware('auth')->group(function () {
@@ -53,13 +52,15 @@ Route::middleware('auth')->group(function () {
     // ─── ADMINISTRACIÓN ──────────────────────────────────────
 
     // Historial / Logs
-    Route::get('/historial', [\App\Http\Controllers\HistorialController::class, 'index'])->name('historial.index');
+    Route::get('/historial', [\App\Http\Controllers\HistorialController::class, 'index'])->name('historial.index')->middleware('permission:historial.ver');
 
     // Usuarios
-    Route::get('/usuarios', fn() => view('usuarios.index'))->name('usuarios.index');
-
-    // Roles y Permisos
-    Route::get('/roles', fn() => view('roles.index'))->name('roles.index');
+    Route::resource('/usuarios', \App\Http\Controllers\UsuarioController::class)->except(['create', 'show', 'edit'])->middleware('permission:usuarios.gestionar');
+    
+    // Roles
+    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index')->middleware('permission:roles.gestionar');
+    Route::put('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'update'])->name('roles.update')->middleware('permission:roles.gestionar');
+    Route::post('/roles/bulk', [\App\Http\Controllers\RoleController::class, 'updateBulk'])->name('roles.bulk')->middleware('permission:roles.gestionar');
 
 });
 

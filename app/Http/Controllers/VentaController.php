@@ -14,11 +14,17 @@ class VentaController extends Controller
     public function index()
     {
         $ventas = Venta::with('detalles')->latest()->get();
-        return view('ventas.index', compact('ventas'));
+        
+        $totalVentas = Venta::count();
+        $ingresosHoy = Venta::whereDate('created_at', now()->toDateString())->sum('total');
+
+        return view('ventas.index', compact('ventas', 'totalVentas', 'ingresosHoy'));
     }
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('ventas.crear'), 403, 'No tienes permiso para registrar ventas.');
+
         // Solo enviar productos activos y con stock > 0
         $productos = Producto::where('estado', 'activo')
             ->where('stock', '>', 0)
@@ -30,6 +36,8 @@ class VentaController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('ventas.crear'), 403, 'No tienes permiso para registrar ventas.');
+
         $request->validate([
             'metodo_pago' => 'required|string|in:Efectivo,Tarjeta de crédito,Tarjeta de débito,Transferencia',
             'notas'       => 'nullable|string',
@@ -99,6 +107,15 @@ class VentaController extends Controller
                 'total'           => $totalVenta,
             ]);
 
+            // Registrar Historial
+            LogActividad::create([
+                'user_id' => auth()->id(),
+                'accion' => 'Creación',
+                'modulo' => 'Ventas',
+                'detalle' => 'Registró nueva venta #' . str_pad($venta->id, 5, '0', STR_PAD_LEFT) . ' por $' . number_format($totalVenta, 0, ',', '.'),
+                'ip_address' => request()->ip(),
+            ]);
+
             DB::commit();
 
             return redirect()->route('ventas.index')
@@ -118,6 +135,8 @@ class VentaController extends Controller
 
     public function destroy(Venta $venta)
     {
+        abort_unless(auth()->user()->hasPermission('ventas.anular'), 403, 'No tienes permiso para anular ventas.');
+
         // Cancelar venta y revertir stock
         try {
             DB::beginTransaction();

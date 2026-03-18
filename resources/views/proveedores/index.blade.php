@@ -12,10 +12,12 @@
             <h1>Proveedores</h1>
             <p>{{ $proveedores->count() }} proveedor(es) registrado(s)</p>
         </div>
+        @if(auth()->user()->hasPermission('proveedores.crear'))
         <a href="{{ route('proveedores.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo Proveedor
         </a>
+        @endif
     </div>
 
     {{-- Filtros --}}
@@ -42,7 +44,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                 <h3>No hay proveedores</h3>
                 <p>{{ request()->hasAny(['buscar','estado']) ? 'Ningún proveedor coincide con los filtros.' : 'Añade tu primer proveedor para comenzar.' }}</p>
-                @if(!request()->hasAny(['buscar','estado']))
+                @if(!request()->hasAny(['buscar','estado']) && auth()->user()->hasPermission('proveedores.crear'))
                     <a href="{{ route('proveedores.create') }}" class="btn btn-primary" style="margin-top:8px">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Añadir Proveedor
@@ -77,12 +79,21 @@
                         <td><span class="badge {{ $prov->badge_estado }}">{{ $prov->label_estado }}</span></td>
                         <td>
                             <div style="display:flex; gap:6px">
+                                @if(auth()->user()->hasPermission('proveedores.editar'))
                                 <a href="{{ route('proveedores.edit', $prov) }}" class="btn btn-secondary btn-sm">Editar</a>
+                                @endif
+                                
+                                @if(auth()->user()->hasPermission('proveedores.eliminar'))
                                 <form method="POST" action="{{ route('proveedores.destroy', $prov) }}"
                                       onsubmit="return confirm('¿Eliminar el proveedor «{{ $prov->nombre }}»? Sus productos quedarán sin proveedor asignado.')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-danger btn-sm">Eliminar</button>
                                 </form>
+                                @endif
+                                
+                                @if(!auth()->user()->hasPermission('proveedores.editar') && !auth()->user()->hasPermission('proveedores.eliminar'))
+                                <span style="color:var(--color-text-muted); font-size:12px; font-style:italic">Sin permisos</span>
+                                @endif
                             </div>
                         </td>
                     </tr>

@@ -30,6 +30,7 @@
         {{-- GESTIÓN --}}
         <div class="sidebar-section">
             <div class="sidebar-section-title">Gestión</div>
+            @if(auth()->user()->hasPermission('productos.ver'))
             <a href="{{ route('productos.index') }}" class="sidebar-link {{ request()->routeIs('productos.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
@@ -37,6 +38,9 @@
                 </svg>
                 Productos
             </a>
+            @endif
+
+            @if(auth()->user()->hasPermission('ventas.ver'))
             <a href="{{ route('ventas.index') }}" class="sidebar-link {{ request()->routeIs('ventas.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="9" cy="21" r="1"/>
@@ -45,6 +49,9 @@
                 </svg>
                 Ventas
             </a>
+            @endif
+
+            @if(auth()->user()->hasPermission('proveedores.ver'))
             <a href="{{ route('proveedores.index') }}" class="sidebar-link {{ request()->routeIs('proveedores.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13"/>
@@ -54,6 +61,9 @@
                 </svg>
                 Proveedores
             </a>
+            @endif
+
+            @if(auth()->user()->hasPermission('estadisticas.ver'))
             <a href="{{ route('estadisticas.index') }}" class="sidebar-link {{ request()->routeIs('estadisticas.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="20" x2="18" y2="10"/>
@@ -62,11 +72,15 @@
                 </svg>
                 Estadísticas
             </a>
+            @endif
         </div>
 
         {{-- ADMINISTRACIÓN --}}
+        @if(auth()->user()->hasPermission('historial.ver') || auth()->user()->hasPermission('usuarios.gestionar') || auth()->user()->hasPermission('roles.gestionar'))
         <div class="sidebar-section">
             <div class="sidebar-section-title">Administración</div>
+            
+            @if(auth()->user()->hasPermission('historial.ver'))
             <a href="{{ route('historial.index') }}" class="sidebar-link {{ request()->routeIs('historial.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -76,6 +90,9 @@
                 </svg>
                 Historial
             </a>
+            @endif
+
+            @if(auth()->user()->hasPermission('usuarios.gestionar'))
             <a href="{{ route('usuarios.index') }}" class="sidebar-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -85,6 +102,9 @@
                 </svg>
                 Usuarios
             </a>
+            @endif
+
+            @if(auth()->user()->hasPermission('roles.gestionar'))
             <a href="{{ route('roles.index') }}" class="sidebar-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -92,7 +112,9 @@
                 </svg>
                 Roles y Permisos
             </a>
+            @endif
         </div>
+        @endif
 
     </nav>
 

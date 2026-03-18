@@ -29,11 +29,14 @@ class ProveedorController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('proveedores.crear'), 403, 'No tienes permiso para crear proveedores.');
         return view('proveedores.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('proveedores.crear'), 403, 'No tienes permiso para crear proveedores.');
+
         $request->validate([
             'nombre'    => 'required|string|max:255',
             'ruc'       => 'nullable|string|max:50',
@@ -58,11 +61,14 @@ class ProveedorController extends Controller
 
     public function edit(Proveedor $proveedor)
     {
+        abort_unless(auth()->user()->hasPermission('proveedores.editar'), 403, 'No tienes permiso para editar proveedores.');
         return view('proveedores.edit', compact('proveedor'));
     }
 
     public function update(Request $request, Proveedor $proveedor)
     {
+        abort_unless(auth()->user()->hasPermission('proveedores.editar'), 403, 'No tienes permiso para editar proveedores.');
+
         $request->validate([
             'nombre'    => 'required|string|max:255',
             'ruc'       => 'nullable|string|max:50',
@@ -84,6 +90,8 @@ class ProveedorController extends Controller
 
     public function destroy(Proveedor $proveedor)
     {
+        abort_unless(auth()->user()->hasPermission('proveedores.eliminar'), 403, 'No tienes permiso para eliminar proveedores.');
+
         // Quita la relación antes de eliminar
         $proveedor->productos()->update(['proveedor_id' => null]);
         $nombre = $proveedor->nombre;

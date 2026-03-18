@@ -95,6 +95,7 @@
             <hr class="divider">
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+                @if(auth()->user()->hasPermission('productos.eliminar'))
                 <form method="POST" action="{{ route('productos.destroy', $producto) }}"
                       onsubmit="return confirm('¿Eliminar el producto «{{ $producto->nombre }}»?')">
                     @csrf @method('DELETE')
@@ -103,6 +104,9 @@
                         Eliminar
                     </button>
                 </form>
+                @else
+                <div></div> <!-- Placeholder -->
+                @endif
                 <div style="display:flex; gap:10px">
                     <a href="{{ route('productos.index') }}" class="btn btn-secondary">Cancelar</a>
                     <button type="submit" form="form-update" class="btn btn-primary">

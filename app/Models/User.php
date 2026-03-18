@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'estado', 'last_login_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +27,25 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_login_at' => 'datetime',
+            'estado' => 'string'
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function hasPermission($permissionStr)
+    {
+        // Si el usuario no tiene rol, asumimos admin temporal para no romper en seed, o negamos.
+        // Mejor práctica, si es admin total devuelve true. Si el array lo tiene, lo dejamos pasar.
+        if (!$this->role) {
+            return false;
+        }
+
+        $permisosDelRol = $this->role->permisos ?? [];
+        return in_array($permissionStr, $permisosDelRol);
     }
 }

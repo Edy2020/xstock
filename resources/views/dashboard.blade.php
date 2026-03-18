@@ -21,9 +21,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             </div>
             <div class="stat-label">Total Productos</div>
-            <div class="stat-value">248</div>
+            <div class="stat-value">{{ $totalProductos }}</div>
             <div class="stat-change">
-                <span class="badge badge-green" style="font-size:10.5px">+12 este mes</span>
+                <span class="badge badge-green" style="font-size:10.5px">+{{ $productosMes }} este mes</span>
             </div>
         </div>
         <div class="stat-card">
@@ -31,9 +31,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             </div>
             <div class="stat-label">Ventas Hoy</div>
-            <div class="stat-value">34</div>
+            <div class="stat-value">{{ $ventasHoy }}</div>
             <div class="stat-change">
-                <span class="badge badge-green" style="font-size:10.5px">↑ 8% vs ayer</span>
+                <span class="badge {{ $porcentajeVentas >= 0 ? 'badge-green' : 'badge-red' }}" style="font-size:10.5px">
+                    {{ $porcentajeVentas >= 0 ? '↑' : '↓' }} {{ abs($porcentajeVentas) }}% vs ayer
+                </span>
             </div>
         </div>
         <div class="stat-card">
@@ -41,9 +43,13 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a16207" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <div class="stat-label">Stock Crítico</div>
-            <div class="stat-value">7</div>
+            <div class="stat-value">{{ $countStockCritico }}</div>
             <div class="stat-change">
-                <span class="badge badge-yellow" style="font-size:10.5px">Requiere atención</span>
+                @if($countStockCritico > 0)
+                    <span class="badge badge-yellow" style="font-size:10.5px">Requiere atención</span>
+                @else
+                    <span class="badge badge-green" style="font-size:10.5px">Todo óptimo</span>
+                @endif
             </div>
         </div>
         <div class="stat-card">
@@ -51,9 +57,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             </div>
             <div class="stat-label">Proveedores</div>
-            <div class="stat-value">18</div>
+            <div class="stat-value">{{ $totalProveedores }}</div>
             <div class="stat-change">
-                <span class="badge badge-gray" style="font-size:10.5px">3 activos hoy</span>
+                <span class="badge badge-gray" style="font-size:10.5px">{{ $proveedoresActivos }} activos</span>
             </div>
         </div>
     </div>
@@ -129,41 +135,28 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($ultimasVentas as $venta)
                         <tr>
-                            <td style="color:var(--color-text-muted)">#1042</td>
-                            <td>Monitor LG 24"</td>
-                            <td>1</td>
-                            <td>$320.00</td>
+                            <td style="color:var(--color-text-muted)">#{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</td>
+                            <td>
+                                @if($venta->detalles->count() > 0)
+                                    <b>{{ $venta->detalles->first()->producto_nombre }}</b>
+                                    @if($venta->detalles->count() > 1) <span style="font-size:11px; color:var(--color-text-muted)">(+{{ $venta->detalles->count() - 1 }})</span> @endif
+                                @else
+                                    <span style="color:var(--color-text-muted)">Sin detalles</span>
+                                @endif
+                            </td>
+                            <td>{{ $venta->detalles->sum('cantidad') }}</td>
+                            <td style="font-weight:600">${{ number_format($venta->total, 0, ',', '.') }}</td>
                             <td><span class="badge badge-green">Completada</span></td>
                         </tr>
+                        @endforeach
+
+                        @if($ultimasVentas->isEmpty())
                         <tr>
-                            <td style="color:var(--color-text-muted)">#1041</td>
-                            <td>Teclado Mecánico</td>
-                            <td>2</td>
-                            <td>$180.00</td>
-                            <td><span class="badge badge-green">Completada</span></td>
+                            <td colspan="5" style="text-align:center; padding:30px; color:var(--color-text-muted)">No hay ventas recientes registradas.</td>
                         </tr>
-                        <tr>
-                            <td style="color:var(--color-text-muted)">#1040</td>
-                            <td>Mouse Inalámbrico</td>
-                            <td>3</td>
-                            <td>$90.00</td>
-                            <td><span class="badge badge-blue">En proceso</span></td>
-                        </tr>
-                        <tr>
-                            <td style="color:var(--color-text-muted)">#1039</td>
-                            <td>Cable HDMI 3m</td>
-                            <td>5</td>
-                            <td>$45.00</td>
-                            <td><span class="badge badge-green">Completada</span></td>
-                        </tr>
-                        <tr>
-                            <td style="color:var(--color-text-muted)">#1038</td>
-                            <td>USB Hub 7 puertos</td>
-                            <td>1</td>
-                            <td>$35.00</td>
-                            <td><span class="badge badge-yellow">Pendiente</span></td>
-                        </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -179,29 +172,32 @@
                 <a href="{{ route('productos.index') }}" class="btn btn-secondary btn-sm">Ver todo</a>
             </div>
             <div style="display:flex; flex-direction:column; gap:10px">
+                @foreach($productosStockCritico as $item)
                 @php
-                $stockCritico = [
-                    ['nombre'=>'Cable HDMI 3m','stock'=>2,'min'=>10,'color'=>'badge-red','label'=>'Agotándose'],
-                    ['nombre'=>'Adaptador USB-C','stock'=>0,'min'=>5,'color'=>'badge-red','label'=>'Sin stock'],
-                    ['nombre'=>'Mouse Inalámbrico','stock'=>4,'min'=>15,'color'=>'badge-yellow','label'=>'Bajo'],
-                    ['nombre'=>'Audífonos Bluetooth','stock'=>3,'min'=>10,'color'=>'badge-yellow','label'=>'Bajo'],
-                    ['nombre'=>'Soporte para Monitor','stock'=>1,'min'=>5,'color'=>'badge-red','label'=>'Crítico'],
-                    ['nombre'=>'Pad para Mouse XL','stock'=>5,'min'=>20,'color'=>'badge-yellow','label'=>'Bajo'],
-                    ['nombre'=>'Hub USB 4P','stock'=>0,'min'=>8,'color'=>'badge-red','label'=>'Sin stock'],
-                ];
+                    $isRed = $item->stock == 0;
+                    $color = $isRed ? 'badge-red' : 'badge-yellow';
+                    $label = $isRed ? 'Agotado' : 'Bajo';
+                    $min = 10; // Límite visual 100% (si stock 0 es rojo)
+                    $porcentaje = min(($item->stock / $min) * 100, 100);
                 @endphp
-                @foreach($stockCritico as $item)
                 <div style="display:flex; align-items:center; gap:10px">
                     <div style="flex:1; min-width:0">
-                        <div style="font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ $item['nombre'] }}</div>
-                        <div style="font-size:11.5px; color:var(--color-text-muted)">Stock: {{ $item['stock'] }} / mín: {{ $item['min'] }}</div>
+                        <div style="font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ $item->nombre }}</div>
+                        <div style="font-size:11.5px; color:var(--color-text-muted)">Stock actual: {{ $item->stock }} unidades</div>
                         <div class="progress-bar-wrap" style="margin-top:4px">
-                            <div class="progress-bar-fill" style="width:{{ min(($item['stock']/$item['min'])*100,100) }}%; background:{{ $item['color']==='badge-red'?'#dc2626':'#d97706' }}"></div>
+                            <div class="progress-bar-fill" style="width:{{ $porcentaje }}%; background:{{ $isRed ? '#dc2626' : '#d97706' }}"></div>
                         </div>
                     </div>
-                    <span class="badge {{ $item['color'] }}" style="flex-shrink:0">{{ $item['label'] }}</span>
+                    <span class="badge {{ $color }}" style="flex-shrink:0">{{ $label }}</span>
                 </div>
                 @endforeach
+
+                @if($productosStockCritico->isEmpty())
+                <div style="text-align:center; padding:30px 0; color:var(--color-text-muted); font-size:14px">
+                    <svg style="margin:0 auto 10px; opacity:0.6" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Todo el inventario está en niveles óptimos.
+                </div>
+                @endif
             </div>
         </div>
 

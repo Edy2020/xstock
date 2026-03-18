@@ -26,6 +26,8 @@ class ProductoController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('productos.crear'), 403, 'No tienes permiso para crear productos.');
+
         $categorias = Producto::select('categoria')
             ->distinct()
             ->whereNotNull('categoria')
@@ -39,6 +41,8 @@ class ProductoController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('productos.crear'), 403, 'No tienes permiso para crear productos.');
+
         $request->validate([
             'nombre'       => 'required|string|max:255',
             'categoria'    => 'nullable|string|max:100',
@@ -78,6 +82,8 @@ class ProductoController extends Controller
 
     public function edit(Producto $producto)
     {
+        abort_unless(auth()->user()->hasPermission('productos.editar'), 403, 'No tienes permiso para editar productos.');
+
         $categorias = Producto::select('categoria')
             ->distinct()
             ->whereNotNull('categoria')
@@ -91,6 +97,8 @@ class ProductoController extends Controller
 
     public function update(Request $request, Producto $producto)
     {
+        abort_unless(auth()->user()->hasPermission('productos.editar'), 403, 'No tienes permiso para editar productos.');
+
         $validated = $request->validate([
             'nombre'       => 'required|string|max:255',
             'categoria'    => 'nullable|string|max:100',
@@ -117,6 +125,8 @@ class ProductoController extends Controller
 
     public function destroy(Producto $producto)
     {
+        abort_unless(auth()->user()->hasPermission('productos.eliminar'), 403, 'No tienes permiso para eliminar productos.');
+
         $nombre = $producto->nombre;
         $producto->delete();
 

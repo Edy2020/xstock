@@ -21,10 +21,12 @@
             <h1>Ventas</h1>
             <p>Registro y control de las ventas realizadas</p>
         </div>
+        @if(auth()->user()->hasPermission('ventas.crear'))
         <a href="{{ route('ventas.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nueva Venta
         </a>
+        @endif
     </div>
 
     {{-- Resumen Rápido (Opcional, estadísticas básicas) --}}
@@ -66,10 +68,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                 <h3>No hay ventas registradas</h3>
                 <p>Añade tu primera venta para visualizarla en el historial.</p>
+                @if(auth()->user()->hasPermission('ventas.crear'))
                 <a href="{{ route('ventas.create') }}" class="btn btn-primary" style="margin-top:8px">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Nueva Venta
                 </a>
+                @endif
             </div>
         </div>
     @else
@@ -109,11 +113,15 @@
                         <td>
                             <div style="display:flex; gap:6px">
                                 <!-- Podrímos añadir una vista Show próximamente -->
+                                @if(auth()->user()->hasPermission('ventas.anular'))
                                 <form method="POST" action="{{ route('ventas.destroy', $venta->id) }}"
                                       onsubmit="return confirm('¿Anular esta venta permanentemente y reponer el stock?')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-danger btn-sm">Anular / Eliminar</button>
                                 </form>
+                                @else
+                                <span style="color:var(--color-text-muted); font-size:12px; font-style:italic">Acción restringida</span>
+                                @endif
                             </div>
                         </td>
                     </tr>

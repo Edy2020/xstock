@@ -27,6 +27,21 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = auth()->user();
+
+        // Expulsar si el Admin lo desactivó
+        if ($user->estado === 'inactivo') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return back()->withErrors(['email' => 'Tu cuenta ha sido desactivada temporal o permanentemente. Comunícate con Administración.']);
+        }
+
+        // Actualizar último acceso de forma silenciosa
+        $user->last_login_at = now();
+        $user->save();
+
         $request->session()->regenerate();
 
         LogActividad::create([

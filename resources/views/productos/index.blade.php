@@ -12,10 +12,12 @@
             <h1>Productos</h1>
             <p>{{ $productos->count() }} producto(s) registrado(s)</p>
         </div>
+        @if(auth()->user()->hasPermission('productos.crear'))
         <a href="{{ route('productos.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo Producto
         </a>
+        @endif
     </div>
 
     {{-- Filtros (Client-side JS) --}}
@@ -55,10 +57,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                 <h3>No hay productos</h3>
                 <p>Añade tu primer producto para comenzar.</p>
+                @if(auth()->user()->hasPermission('productos.crear'))
                 <a href="{{ route('productos.create') }}" class="btn btn-primary" style="margin-top:8px">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Añadir Producto
                 </a>
+                @endif
             </div>
         </div>
     @else
@@ -90,12 +94,21 @@
                         <td><span class="badge {{ $producto->badge_estado }}">{{ $producto->label_estado }}</span></td>
                         <td>
                             <div style="display:flex; gap:6px">
+                                @if(auth()->user()->hasPermission('productos.editar'))
                                 <a href="{{ route('productos.edit', $producto) }}" class="btn btn-secondary btn-sm">Editar</a>
+                                @endif
+                                
+                                @if(auth()->user()->hasPermission('productos.eliminar'))
                                 <form method="POST" action="{{ route('productos.destroy', $producto) }}"
                                       onsubmit="return confirm('¿Eliminar el producto «{{ $producto->nombre }}»?')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-danger btn-sm">Eliminar</button>
                                 </form>
+                                @endif
+                                
+                                @if(!auth()->user()->hasPermission('productos.editar') && !auth()->user()->hasPermission('productos.eliminar'))
+                                <span style="color:var(--color-text-muted); font-size:12px; font-style:italic">Sin permisos</span>
+                                @endif
                             </div>
                         </td>
                     </tr>
