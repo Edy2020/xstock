@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\LogActividad;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductoController extends Controller
 {
@@ -267,5 +268,71 @@ class ProductoController extends Controller
             fclose($handle);
             return back()->withErrors(['error' => 'Error estructural al leer CSV. Asegúrese de que tenga el formato correcto: Nombre, Descripción, Categoría, Proveedor, Precio, Stock, Estado.']);
         }
+    }
+
+    public function exportExcel()
+    {
+        abort_unless(auth()->user()->hasPermission('productos.crear'), 403);
+
+        $productos = Producto::with('proveedor')->latest()->get();
+
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Exportación',
+            'modulo' => 'Productos',
+            'detalle' => 'Exportó el catálogo completo de productos a Excel/CSV (' . $productos->count() . ' registros).',
+            'ip_address' => request()->ip(),
+        ]);
+
+        $fileName = 'productos_' . now()->format('Y-m-d_H-i') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($productos) {
+            $handle = fopen('php://output', 'w');
+            // BOM para que Excel reconozca UTF-8
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($handle, ['Nombre', 'Descripción', 'Categoría', 'Proveedor', 'Precio (CLP)', 'Stock', 'Estado'], ';');
+            foreach ($productos as $p) {
+                fputcsv($handle, [
+                    $p->nombre,
+                    $p->descripcion ?? '',
+                    $p->categoria ?? '',
+                    $p->proveedor->nombre ?? '',
+                    $p->precio,
+                    $p->stock,
+                    $p->estado,
+                ], ';');
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportPdf()
+    {
+        abort_unless(auth()->user()->hasPermission('productos.crear'), 403);
+
+        $productos = Producto::with('proveedor')->latest()->get();
+
+        LogActividad::create([
+            'user_id' => auth()->id(),
+            'accion' => 'Exportación',
+            'modulo' => 'Productos',
+            'detalle' => 'Exportó el catálogo completo de productos a PDF (' . $productos->count() . ' registros).',
+            'ip_address' => request()->ip(),
+        ]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('productos.export_pdf', compact('productos'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('productos_' . now()->format('Y-m-d_H-i') . '.pdf');
     }
 }

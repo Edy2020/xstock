@@ -30,16 +30,21 @@ Route::middleware('auth')->group(function () {
 
     // Productos
     Route::post('productos/import', [\App\Http\Controllers\ProductoController::class, 'import'])->name('productos.import');
+    Route::get('productos/export/excel', [\App\Http\Controllers\ProductoController::class, 'exportExcel'])->name('productos.export.excel');
+    Route::get('productos/export/pdf', [\App\Http\Controllers\ProductoController::class, 'exportPdf'])->name('productos.export.pdf');
     Route::resource('productos', \App\Http\Controllers\ProductoController::class);
 
 
     // Ventas
     Route::prefix('ventas')->name('ventas.')->group(function () {
-        Route::get('/',        [\App\Http\Controllers\VentaController::class, 'index'])->name('index');
-        Route::get('/nueva',   [\App\Http\Controllers\VentaController::class, 'create'])->name('create');
-        Route::post('/',       [\App\Http\Controllers\VentaController::class, 'store'])->name('store');
-        Route::get('/{venta}', [\App\Http\Controllers\VentaController::class, 'show'])->name('show');
-        Route::delete('/{venta}', [\App\Http\Controllers\VentaController::class, 'destroy'])->name('destroy');
+        Route::get('/',                   [\App\Http\Controllers\VentaController::class, 'index'])->name('index');
+        Route::get('/nueva',              [\App\Http\Controllers\VentaController::class, 'create'])->name('create');
+        Route::post('/',                  [\App\Http\Controllers\VentaController::class, 'store'])->name('store');
+        Route::get('/export',             [\App\Http\Controllers\VentaController::class, 'exportOptions'])->name('export.options');
+        Route::get('/export/excel',       [\App\Http\Controllers\VentaController::class, 'exportExcel'])->name('export.excel');
+        Route::get('/export/pdf',         [\App\Http\Controllers\VentaController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/{venta}',            [\App\Http\Controllers\VentaController::class, 'show'])->name('show');
+        Route::delete('/{venta}',         [\App\Http\Controllers\VentaController::class, 'destroy'])->name('destroy');
     });
 
     // Proveedores

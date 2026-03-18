@@ -36,10 +36,16 @@
             <p>Registro y control de las ventas realizadas</p>
         </div>
         @if(auth()->user()->hasPermission('ventas.crear'))
-        <a href="{{ route('ventas.create') }}" class="btn btn-success">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nueva Venta
-        </a>
+        <div style="display:flex; gap:8px">
+            <a href="{{ route('ventas.export.options') }}" class="btn btn-secondary" title="Exportar historial de ventas">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                Exportar
+            </a>
+            <a href="{{ route('ventas.create') }}" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nueva Venta
+            </a>
+        </div>
         @endif
     </div>
 
@@ -97,6 +103,7 @@
                     <tr>
                         <th style="width:100px">ID Venta</th>
                         <th>Fecha y Hora</th>
+                        <th>Vendedor</th>
                         <th>Método Pago</th>
                         <th>Items</th>
                         <th>Descuento</th>
@@ -114,6 +121,7 @@
                             {{ $venta->created_at->format('d/m/Y') }} 
                             <span style="color:var(--color-text-muted); font-size:12.5px">{{ $venta->created_at->format('H:i') }}</span>
                         </td>
+                        <td style="font-size:12.5px">{{ $venta->vendedor->name ?? '—' }}</td>
                         <td>
                             <span class="badge badge-gray" style="text-transform:capitalize">{{ $venta->metodo_pago }}</span>
                         </td>

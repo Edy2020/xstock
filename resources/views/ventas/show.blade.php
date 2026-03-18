@@ -47,6 +47,10 @@
                         <span style="color:var(--color-text-muted)">Método de Pago</span>
                         <span style="text-transform:capitalize; color:var(--color-primary); font-weight:500">{{ $venta->metodo_pago }}</span>
                     </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                        <span style="color:var(--color-text-muted)">Vendedor</span>
+                        <span style="font-weight:500">{{ $venta->vendedor->name ?? 'No registrado' }}</span>
+                    </div>
                     <div style="display:flex; justify-content:space-between; padding-bottom:4px">
                         <span style="color:var(--color-text-muted)">Unidades Totales</span>
                         <span>{{ $venta->detalles->sum('cantidad') }} artículos</span>

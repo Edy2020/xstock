@@ -12,6 +12,7 @@ class Venta extends Model
     protected $table = 'ventas';
 
     protected $fillable = [
+        'user_id',
         'subtotal',
         'descuento_total',
         'total',
@@ -29,6 +30,12 @@ class Venta extends Model
     public function detalles()
     {
         return $this->hasMany(DetalleVenta::class, 'venta_id');
+    }
+
+    // Relación con el vendedor
+    public function vendedor()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
     public function getMetodoPagoFormatAttribute()

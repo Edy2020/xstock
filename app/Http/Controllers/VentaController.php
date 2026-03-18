@@ -8,12 +8,13 @@ use App\Models\Producto;
 use App\Models\LogActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class VentaController extends Controller
 {
     public function index()
     {
-        $ventas = Venta::with('detalles')->latest()->get();
+        $ventas = Venta::with(['detalles', 'vendedor'])->latest()->get();
         
         $totalVentas = Venta::count();
         $ingresosHoy = Venta::whereDate('created_at', now()->toDateString())->sum('total');
@@ -59,6 +60,7 @@ class VentaController extends Controller
 
             // 1. Crear Venta base
             $venta = Venta::create([
+                'user_id'         => auth()->id(),
                 'subtotal'        => 0,
                 'descuento_total' => 0,
                 'total'           => 0,
@@ -129,7 +131,7 @@ class VentaController extends Controller
 
     public function show($id)
     {
-        $venta = Venta::with('detalles')->findOrFail($id);
+        $venta = Venta::with(['detalles', 'vendedor'])->findOrFail($id);
         return view('ventas.show', compact('venta'));
     }
 
@@ -168,5 +170,88 @@ class VentaController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al anular la venta: ' . $e->getMessage()]);
         }
+    }
+    public function exportOptions()
+    {
+        return view('ventas.export_options');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $periodo = $request->get('periodo', 'todo');
+        $ventas  = $this->getVentasByPeriod($periodo);
+
+        LogActividad::create([
+            'user_id'    => auth()->id(),
+            'accion'     => 'Exportación',
+            'modulo'     => 'Ventas',
+            'detalle'    => 'Exportó ventas a CSV — período: ' . $periodo . ' (' . $ventas->count() . ' registros).',
+            'ip_address' => request()->ip(),
+        ]);
+
+        $fileName = 'ventas_' . $periodo . '_' . now()->format('Y-m-d_H-i') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($ventas) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($handle, ['ID Venta', 'Fecha', 'Hora', 'Vendedor', 'Método Pago', 'Items (Qty)', 'Subtotal', 'Descuento', 'Total', 'Notas'], ';');
+            foreach ($ventas as $v) {
+                fputcsv($handle, [
+                    '#' . str_pad($v->id, 5, '0', STR_PAD_LEFT),
+                    $v->created_at->format('d/m/Y'),
+                    $v->created_at->format('H:i'),
+                    $v->vendedor->name ?? 'Desconocido',
+                    $v->metodo_pago,
+                    $v->detalles->sum('cantidad'),
+                    $v->subtotal,
+                    $v->descuento_total,
+                    $v->total,
+                    $v->notas ?? '',
+                ], ';');
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $periodo = $request->get('periodo', 'todo');
+        $ventas  = $this->getVentasByPeriod($periodo);
+
+        LogActividad::create([
+            'user_id'    => auth()->id(),
+            'accion'     => 'Exportación',
+            'modulo'     => 'Ventas',
+            'detalle'    => 'Exportó ventas a PDF — período: ' . $periodo . ' (' . $ventas->count() . ' registros).',
+            'ip_address' => request()->ip(),
+        ]);
+
+        $pdf = Pdf::loadView('ventas.export_pdf', compact('ventas', 'periodo'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('ventas_' . $periodo . '_' . now()->format('Y-m-d_H-i') . '.pdf');
+    }
+
+    private function getVentasByPeriod(string $periodo)
+    {
+        $query = Venta::with(['detalles', 'vendedor'])->latest();
+
+        return match($periodo) {
+            'hoy'    => $query->whereDate('created_at', now()->toDateString())->get(),
+            'semana' => $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->get(),
+            'mes'    => $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->get(),
+            'anno'   => $query->whereYear('created_at', now()->year)->get(),
+            default  => $query->get(),
+        };
     }
 }
