@@ -8,7 +8,7 @@
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
             <line x1="12" y1="22.08" x2="12" y2="12"/>
         </svg>
-        X<span>Stock</span>
+        <span>XStock</span>
     </a>
 
     <nav class="sidebar-nav">
@@ -138,7 +138,7 @@
         {{-- Botón Salir Circular --}}
         <form method="POST" action="{{ route('logout') }}" style="margin:0">
             @csrf
-            <button type="submit" title="Cerrar sesión" style="width:36px; height:36px; border-radius:50%; border:none; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; padding:0" onmouseover="this.style.background='#fecaca'; this.style.color='#b91c1c'" onmouseout="this.style.background='#fee2e2'; this.style.color='#ef4444'">
+            <button type="submit" title="Cerrar sesión" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--color-danger); background:transparent; color:var(--color-danger); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; padding:0" onmouseover="this.style.background='var(--color-danger)'; this.style.color='#ffffff'" onmouseout="this.style.background='transparent'; this.style.color='var(--color-danger)'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/>

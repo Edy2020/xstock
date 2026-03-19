@@ -13,7 +13,7 @@ class RoleSeeder extends Seeder
         $adminPermisos = [
             'productos.ver', 'productos.crear', 'productos.editar', 'productos.eliminar',
             'ventas.ver', 'ventas.crear', 'ventas.anular',
-            'proveedores.ver', 'proveedores.crear', 'proveedores.editar','proveedores.eliminar',
+            'proveedores.ver', 'proveedores.crear', 'proveedores.editar', 'proveedores.eliminar',
             'estadisticas.ver', 'historial.ver', 'usuarios.gestionar', 'roles.gestionar',
         ];
 

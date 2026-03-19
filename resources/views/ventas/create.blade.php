@@ -49,7 +49,6 @@
                                 </tr>
                             </thead>
                             <tbody id="catalog-tbody">
-                                <!-- Opciones generadas vía JS -->
                             </tbody>
                         </table>
                         <div id="catalog-empty-state" style="display:none; padding:20px; text-align:center; color:var(--color-text-muted); font-size:13px">
@@ -74,7 +73,6 @@
                                 </tr>
                             </thead>
                             <tbody id="cart-tbody">
-                                {{-- Row rendered by JS --}}
                                 <tr id="empty-cart-row">
                                     <td colspan="6" style="text-align:center; padding:30px; color:var(--color-text-muted)">
                                         El carrito está vacío. Seleccione productos arriba para comenzar.
@@ -87,7 +85,6 @@
 
             </div>
 
-            {{-- Panel derecho: resumen y confirmar --}}
             <div style="position:sticky; top:20px">
                 <div class="card">
                     <div class="card-title" style="margin-bottom:14px">Resumen de Venta</div>
@@ -97,13 +94,13 @@
                             <span style="color:var(--color-text-muted)">Subtotal</span>
                             <span id="summary-subtotal">$0</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center">
-                            <span style="color:var(--color-text-muted)">Desc. Global (%)</span>
-                            <input type="number" id="global-discount-ui" min="0" max="100" value="0" class="form-input" style="width:60px; text-align:center; padding:4px; font-size:12px">
-                        </div>
                         <div style="display:flex; justify-content:space-between">
                             <span style="color:var(--color-text-muted)">Descuentos Acum.</span>
                             <span id="summary-discount" style="color:var(--color-danger)">−$0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center">
+                            <span style="color:var(--color-text-muted)">Desc. Global (%)</span>
+                            <input type="number" id="global-discount-ui" min="0" max="100" value="0" class="form-input" style="width:60px; text-align:center; padding:4px; font-size:12px">
                         </div>
                         <hr class="divider" style="margin:4px 0">
                         <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700">
@@ -162,7 +159,6 @@
     @endphp
 
     <script>
-        // Catálogo de productos inyectado desde backend
         const catalogo = @json($catalogoArray);
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -173,7 +169,6 @@
             const inputData = document.getElementById('productos-input');
             const btnSubmit = document.getElementById('btn-submit');
             
-            // Format numbers to CLP
             const formatCLP = (num) => '$' + Math.round(num).toLocaleString('es-CL');
 
             let cart = [];
@@ -228,12 +223,9 @@
                         tbody.appendChild(tr);
                     });
 
-                    // Update hidden input
                     inputData.value = JSON.stringify(cart);
                     btnSubmit.disabled = false;
                 }
-
-                // Global discount logic
                 let globalDescPct = parseInt(document.getElementById('global-discount-ui').value) || 0;
                 if(globalDescPct < 0) globalDescPct = 0;
                 if(globalDescPct > 100) globalDescPct = 100;
@@ -243,7 +235,6 @@
                 let addGlobalDiscount = currentSubtotalDescItems * (globalDescPct / 100);
                 totalDiscount += addGlobalDiscount;
 
-                // Update summary
                 document.getElementById('summary-subtotal').innerText = formatCLP(grossSubtotal);
                 document.getElementById('summary-discount').innerText = '−' + formatCLP(totalDiscount);
                 document.getElementById('summary-total').innerText = formatCLP(grossSubtotal - totalDiscount);
@@ -271,11 +262,9 @@
                 });
             }
 
-            // Escuchar cambios en descuento global
             document.getElementById('global-discount-ui').addEventListener('input', renderCart);
 
             function attachEvents() {
-                // Cantidad change
                 document.querySelectorAll('.dt-qty').forEach(input => {
                     input.addEventListener('change', (e) => {
                         let i = e.target.getAttribute('data-index');
@@ -287,7 +276,6 @@
                     });
                 });
 
-                // Descuento change
                 document.querySelectorAll('.dt-desc').forEach(input => {
                     input.addEventListener('change', (e) => {
                         let i = e.target.getAttribute('data-index');
@@ -299,7 +287,6 @@
                     });
                 });
 
-                // Botón eliminar
                 document.querySelectorAll('.dt-btn-remove').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         let i = e.currentTarget.getAttribute('data-index');
@@ -308,13 +295,10 @@
                     });
                 });
             }
-
-            // --- Lógica Autocompletado Búsqueda ---
             
             function addToCart(productoData) {
                 const pid = productoData.id;
                 
-                // Verificar si ya existe en el carrito
                 const exists = cart.findIndex(item => item.id === pid);
                 if(exists >= 0) {
                     if (cart[exists].cantidad < cart[exists].stock) {
@@ -366,7 +350,6 @@
                             </td>
                         `;
                         
-                        // Efecto de hover visual para saber que es clickable (si no está seleccionado ya)
                         tr.addEventListener('mouseenter', () => {
                             if (!cart.some(c => c.id === p.id)) tr.style.backgroundColor = 'var(--color-bg-alt)';
                         });
@@ -395,20 +378,15 @@
                 renderCatalog(matches);
             });
 
-            // Inicializar catálogo al cargar la página
             renderCatalog(catalogo);
             updateCatalogHighlights();
 
-            // --- Fin Lógica Autocompletado Búsqueda ---
-
-            // Prevenir submit tonto con enter en el input
             document.getElementById('form-venta').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
                     e.preventDefault();
                 }
             });
 
-            // Initial render
             renderCart();
         });
     </script>
