@@ -41,7 +41,6 @@ class RoleSeeder extends Seeder
             'permisos' => $almacenPermisos,
         ]);
 
-        // Asegurar que haya un usuario vinculado al rol Admin (el primer usuario genérico)
         $user = User::first();
         if ($user) {
             $user->update([

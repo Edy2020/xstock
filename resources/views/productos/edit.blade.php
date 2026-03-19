@@ -109,7 +109,7 @@
                     </button>
                 </form>
                 @else
-                <div></div> <!-- Placeholder -->
+                <div></div>
                 @endif
                 <div style="display:flex; gap:10px">
                     <a href="{{ route('productos.index') }}" class="btn btn-secondary">Cancelar</a>

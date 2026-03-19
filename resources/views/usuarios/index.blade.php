@@ -21,7 +21,6 @@
         </div>
     @endif
 
-    {{-- Búsqueda Dinámica --}}
     <form method="GET" action="{{ route('usuarios.index') }}" id="form-filters" style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap">
         <div class="search-bar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -110,7 +109,6 @@
     </div>
     @endif
 
-    {{-- Modal Usuarios (CRUD genérico Html5) --}}
     <dialog id="userModal" style="padding:0; border:none; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:450px; width:100%;">
         <form method="POST" id="userForm" style="display:flex; flex-direction:column; margin:0;">
             @csrf

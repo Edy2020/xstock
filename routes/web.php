@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
-// Redirigir raíz al dashboard
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });

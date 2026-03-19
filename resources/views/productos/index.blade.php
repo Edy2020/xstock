@@ -52,7 +52,6 @@
         @endif
     </div>
 
-    {{-- Filtros (Client-side JS) --}}
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
         <div class="search-bar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -82,7 +81,6 @@
         <button id="btn-limpiar" class="btn btn-secondary btn-sm" style="display:none">Limpiar</button>
     </div>
 
-    {{-- Vista cuando no hay ningún producto en la tabla (Base de datos vacía) --}}
     @if($productos->isEmpty())
         <div class="card">
             <div class="empty-state">
@@ -150,7 +148,6 @@
             </table>
         </div>
 
-        {{-- Vista cuando los filtros restan todos los resultados --}}
         <div class="card" id="no-results-state" style="display:none">
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -161,7 +158,6 @@
         </div>
     @endif
 
-    {{-- Script de filtrado en cliente --}}
     @if($productos->isNotEmpty())
     <script>
         document.addEventListener('DOMContentLoaded', function() {

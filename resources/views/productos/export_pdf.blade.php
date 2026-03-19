@@ -14,7 +14,6 @@
     padding: 28px 32px;
   }
 
-  /* ── Header ── */
   .header {
     display: table;
     width: 100%;
@@ -62,7 +61,6 @@
     margin-top: 3px;
   }
 
-  /* ── Table ── */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -104,7 +102,6 @@
   tbody td.bold { font-weight: 600; }
   tbody td.price { font-variant-numeric: tabular-nums; font-weight: 500; }
 
-  /* ── Badges ── */
   .badge {
     display: inline-block;
     padding: 2px 8px;
@@ -128,7 +125,6 @@
   .stock-warn { background: #fff8e6; color: #c07f00; }
   .stock-zero { background: #fdf0f0; color: #d9534f; }
 
-  /* ── Footer ── */
   .footer {
     margin-top: 20px;
     padding-top: 12px;

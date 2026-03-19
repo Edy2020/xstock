@@ -6,9 +6,7 @@
 
     <button type="button" class="btn btn-danger" onclick="document.getElementById('confirmDeleteModal').style.display='flex'">Eliminar Cuenta</button>
 
-    <!-- Modal Background -->
     <div id="confirmDeleteModal" style="display:{{ $errors->userDeletion->isNotEmpty() ? 'flex' : 'none' }}; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px">
-        <!-- Modal Content -->
         <div style="background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:24px; max-width:400px; width:100%; box-shadow:0 10px 25px rgba(0,0,0,0.1)">
             <form method="post" action="{{ route('profile.destroy') }}">
                 @csrf

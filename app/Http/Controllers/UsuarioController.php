@@ -17,9 +17,9 @@ class UsuarioController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -41,7 +41,7 @@ class UsuarioController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', Rules\Password::defaults()],
             'role_id' => ['required', 'exists:roles,id'],
             'estado' => ['required', 'in:activo,inactivo'],
@@ -66,11 +66,11 @@ class UsuarioController extends Controller
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado correctamente.');
     }
 
-    public function update(Request $request, User $usuario) // bind $usuario matching route explicitly but Laravel implicit uses matching param mostly.
+    public function update(Request $request, User $usuario)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$usuario->id],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $usuario->id],
             'role_id' => ['required', 'exists:roles,id'],
             'estado' => ['required', 'in:activo,inactivo'],
         ]);

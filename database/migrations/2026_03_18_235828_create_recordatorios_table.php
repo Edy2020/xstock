@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     /**
      * Run the migrations.
@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('titulo');
             $table->text('descripcion')->nullable();
             $table->dateTime('fecha');
-            $table->string('color')->default('#3b82f6'); // Color para FullCalendar
+            $table->string('color')->default('#3b82f6');
             $table->boolean('completado')->default(false);
             $table->timestamps();
         });

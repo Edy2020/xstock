@@ -18,7 +18,6 @@
 
     <div class="grid-2">
 
-        {{-- Info de Contacto --}}
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
                 <div class="card-header">
@@ -67,7 +66,6 @@
                     <div class="stat-label" style="font-size:12px; color:var(--color-text-muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px">Artículos Suministrados</div>
                     <div class="stat-value" style="font-size:28px; font-weight:700; margin-top:8px">{{ $productos->count() }}</div>
                 </div>
-                <!-- Espacio para mas metricas si hicieran falta -->
             </div>
 
             <div class="card">

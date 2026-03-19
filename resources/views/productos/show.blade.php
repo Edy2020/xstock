@@ -18,7 +18,6 @@
 
     <div class="grid-2">
 
-        {{-- Info principal --}}
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
                 <div class="card-header">
@@ -55,7 +54,6 @@
             @endif
         </div>
 
-        {{-- Stock y ventas --}}
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Inventario</div>

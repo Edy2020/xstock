@@ -109,7 +109,6 @@
             </div>
         </div>
 
-        {{-- Productos de este proveedor --}}
         @if($proveedor->productos->isNotEmpty())
         <div class="card" style="margin-top:16px">
             <div class="card-header">

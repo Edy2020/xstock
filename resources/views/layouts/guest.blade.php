@@ -7,7 +7,6 @@
 
         <title>{{ config('app.name', 'XStock') }} - Acceso</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet">
@@ -204,7 +203,6 @@
                 cursor: pointer;
                 transition: transform 0.1s, opacity 0.2s;
                 margin-top: 24px;
-                box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
             }
             .btn-submit:hover { opacity: 0.9; }
             .btn-submit:active { transform: scale(0.98); }

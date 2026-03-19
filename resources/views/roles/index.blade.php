@@ -11,7 +11,6 @@
         </button>
     </div>
 
-    {{-- Información general o mensajes --}}
     @if(session('success'))
         <div id="success-alert" class="alert alert-success" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; transition:opacity 0.3s ease">
             <div style="display:flex; align-items:center; gap:10px">
@@ -33,7 +32,6 @@
         </script>
     @endif
 
-    {{-- Tarjetas de roles --}}
     <div class="grid-3" style="margin-bottom:28px">
         @php
             $colors = [
@@ -65,7 +63,6 @@
         @endforeach
     </div>
 
-    {{-- Tabla de permisos por módulo --}}
     <div class="card">
         <div class="card-header">
             <div class="card-title">Permisos por Módulo</div>

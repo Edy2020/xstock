@@ -4,14 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     public function up(): void
     {
         Schema::table('productos', function (Blueprint $table) {
-            // Cambia precio a entero (CLP no tiene centavos)
             $table->bigInteger('precio')->default(0)->change();
-            // Agrega relación con proveedor (opcional)
             $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->nullOnDelete()->after('estado');
         });
     }

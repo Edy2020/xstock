@@ -29,14 +29,12 @@
 
                 <div style="display:flex; flex-direction:column; gap:14px">
 
-                    {{-- Nombre --}}
                     <div class="form-group">
                         <label class="form-label" for="nombre">Nombre <span style="color:var(--color-danger)">*</span></label>
                         <input type="text" id="nombre" name="nombre" class="form-input"
                             value="{{ old('nombre') }}" placeholder="Ej: Monitor LG 24 pulgadas" autofocus required>
                     </div>
 
-                    {{-- Categoría --}}
                     <div class="form-group">
                         <label class="form-label" for="categoria">Categoría</label>
                         <input type="text" id="categoria" name="categoria" class="form-input"
@@ -49,13 +47,10 @@
                         </datalist>
                     </div>
 
-                    {{-- Descripción --}}
                     <div class="form-group">
                         <label class="form-label" for="descripcion">Descripción (Opcional)</label>
                         <textarea id="descripcion" name="descripcion" class="form-textarea" placeholder="Breve descripción o caracteristicas del producto...">{{ old('descripcion') }}</textarea>
                     </div>
-
-                    {{-- Proveedor --}}
                     <div class="form-group">
                         <label class="form-label" for="proveedor_nombre">Proveedor</label>
                         <input type="text" id="proveedor_nombre" name="proveedor_nombre" class="form-input"
@@ -68,7 +63,6 @@
                         </datalist>
                     </div>
 
-                    {{-- Precio CLP --}}
                     <div class="form-group">
                         <label class="form-label" for="precio">Precio (CLP) <span style="color:var(--color-danger)">*</span></label>
                         <div style="position:relative">
@@ -79,14 +73,12 @@
                         </div>
                     </div>
 
-                    {{-- Stock --}}
                     <div class="form-group">
                         <label class="form-label" for="stock">Stock inicial <span style="color:var(--color-danger)">*</span></label>
                         <input type="number" id="stock" name="stock" class="form-input"
                             value="{{ old('stock', 0) }}" min="0" step="1" required>
                     </div>
 
-                    {{-- Estado --}}
                     <div class="form-group">
                         <label class="form-label">Estado</label>
                         <div style="display:flex; gap:10px">

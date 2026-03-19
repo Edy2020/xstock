@@ -13,12 +13,9 @@ class GeneralNotification extends Notification
 
     public $titulo;
     public $mensaje;
-    public $tipo; // success, danger, warning, info
+    public $tipo;
     public $url;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct($titulo, $mensaje, $tipo = 'info', $url = null)
     {
         $this->titulo = $titulo;
@@ -34,7 +31,7 @@ class GeneralNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database']; // We only want database notifications for the UI
+        return ['database'];
     }
 
     /**

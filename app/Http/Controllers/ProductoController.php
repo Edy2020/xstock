@@ -45,28 +45,28 @@ class ProductoController extends Controller
         abort_unless(auth()->user()->hasPermission('productos.crear'), 403, 'No tienes permiso para crear productos.');
 
         $validated = $request->validate([
-            'nombre'       => 'required|string|max:255|unique:productos,nombre',
-            'descripcion'  => 'nullable|string',
-            'categoria'    => 'nullable|string|max:100',
-            'precio'       => 'required|integer|min:0',
-            'stock'        => 'required|integer|min:0',
-            'estado'       => 'required|in:activo,inactivo',
+            'nombre' => 'required|string|max:255|unique:productos,nombre',
+            'descripcion' => 'nullable|string',
+            'categoria' => 'nullable|string|max:100',
+            'precio' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'estado' => 'required|in:activo,inactivo',
             'proveedor_nombre' => 'nullable|string|max:255',
         ], [
             'nombre.required' => 'El nombre del producto es obligatorio.',
-            'nombre.unique'   => 'Ya existe un producto registrado con este mismo nombre.',
+            'nombre.unique' => 'Ya existe un producto registrado con este mismo nombre.',
             'precio.required' => 'El precio es obligatorio.',
-            'precio.integer'  => 'El precio debe ser un número entero (CLP).',
-            'stock.required'  => 'El stock es obligatorio.',
-            'stock.integer'   => 'El stock debe ser un número entero.',
+            'precio.integer' => 'El precio debe ser un número entero (CLP).',
+            'stock.required' => 'El stock es obligatorio.',
+            'stock.integer' => 'El stock debe ser un número entero.',
             'estado.required' => 'El estado es obligatorio.',
         ]);
 
         $proveedor_id = null;
         if (!empty($validated['proveedor_nombre'])) {
             $prov = Proveedor::firstOrCreate(
-                ['nombre' => trim($validated['proveedor_nombre'])],
-                ['estado' => 'activo']
+            ['nombre' => trim($validated['proveedor_nombre'])],
+            ['estado' => 'activo']
             );
             $proveedor_id = $prov->id;
         }
@@ -77,7 +77,6 @@ class ProductoController extends Controller
 
         $producto = Producto::create($data);
 
-        // Registrar Historial
         LogActividad::create([
             'user_id' => auth()->id(),
             'accion' => 'Creación',
@@ -86,13 +85,12 @@ class ProductoController extends Controller
             'ip_address' => request()->ip(),
         ]);
 
-        // Notificación de Producto Analido
         auth()->user()->notify(new \App\Notifications\GeneralNotification(
             'Nuevo Producto',
             "Se ha añadido el producto '{$producto->nombre}'.",
             'info',
             route('productos.index')
-        ));
+            ));
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto "' . $request->nombre . '" añadido correctamente.');
@@ -101,7 +99,7 @@ class ProductoController extends Controller
     public function show(Producto $producto)
     {
         $producto->load('proveedor');
-        
+
         $ultimasVentas = \App\Models\DetalleVenta::where('producto_id', $producto->id)
             ->with('venta')
             ->latest()
@@ -131,12 +129,12 @@ class ProductoController extends Controller
         abort_unless(auth()->user()->hasPermission('productos.editar'), 403, 'No tienes permiso para editar productos.');
 
         $validated = $request->validate([
-            'nombre'       => 'required|string|max:255|unique:productos,nombre,' . $producto->id,
-            'descripcion'  => 'nullable|string',
-            'categoria'    => 'nullable|string|max:100',
-            'precio'       => 'required|integer|min:0',
-            'stock'        => 'required|integer|min:0',
-            'estado'       => 'required|in:activo,inactivo',
+            'nombre' => 'required|string|max:255|unique:productos,nombre,' . $producto->id,
+            'descripcion' => 'nullable|string',
+            'categoria' => 'nullable|string|max:100',
+            'precio' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'estado' => 'required|in:activo,inactivo',
             'proveedor_nombre' => 'nullable|string|max:255',
         ], [
             'nombre.unique' => 'Ya existe otro producto registrado con este mismo nombre.',
@@ -145,8 +143,8 @@ class ProductoController extends Controller
         $proveedor_id = null;
         if (!empty($validated['proveedor_nombre'])) {
             $prov = Proveedor::firstOrCreate(
-                ['nombre' => trim($validated['proveedor_nombre'])],
-                ['estado' => 'activo']
+            ['nombre' => trim($validated['proveedor_nombre'])],
+            ['estado' => 'activo']
             );
             $proveedor_id = $prov->id;
         }
@@ -157,7 +155,6 @@ class ProductoController extends Controller
 
         $producto->update($data);
 
-        // Registrar Historial
         LogActividad::create([
             'user_id' => auth()->id(),
             'accion' => 'Actualización',
@@ -177,7 +174,6 @@ class ProductoController extends Controller
         $nombre = $producto->nombre;
         $producto->delete();
 
-        // Registrar Historial
         LogActividad::create([
             'user_id' => auth()->id(),
             'accion' => 'Eliminación',
@@ -198,15 +194,14 @@ class ProductoController extends Controller
             'archivo_csv' => 'required|file|mimes:csv,txt|max:5120',
         ], [
             'archivo_csv.required' => 'Debe seleccionar un archivo CSV.',
-            'archivo_csv.mimes'    => 'El archivo debe tener formato .csv o .txt.',
+            'archivo_csv.mimes' => 'El archivo debe tener formato .csv o .txt.',
         ]);
 
         $file = $request->file('archivo_csv');
         $handle = fopen($file->getRealPath(), "r");
-        
-        // Saltamos la primera fila de cabeceras
+
         fgetcsv($handle, 1000, ",");
-        
+
         $agregados = 0;
         $omitidos = 0;
         $nombresAgregados = [];
@@ -214,10 +209,10 @@ class ProductoController extends Controller
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             while (($row = fgetcsv($handle, 1000, ",")) !== false) {
-                if (empty(trim($row[0] ?? ''))) continue;
+                if (empty(trim($row[0] ?? '')))
+                    continue;
 
                 $nombre = trim($row[0]);
-                // Verificamos unicidad de nombre antes de insertar
                 if (Producto::where('nombre', $nombre)->exists()) {
                     $omitidos++;
                     continue;
@@ -227,20 +222,20 @@ class ProductoController extends Controller
                 $proveedor_id = null;
                 if (!empty($proveedorNombre)) {
                     $prov = \App\Models\Proveedor::firstOrCreate(
-                        ['nombre' => $proveedorNombre],
-                        ['estado' => 'activo']
+                    ['nombre' => $proveedorNombre],
+                    ['estado' => 'activo']
                     );
                     $proveedor_id = $prov->id;
                 }
 
                 Producto::create([
-                    'nombre'       => $nombre,
-                    'descripcion'  => $row[1] ?? null,
-                    'categoria'    => $row[2] ?? null,
+                    'nombre' => $nombre,
+                    'descripcion' => $row[1] ?? null,
+                    'categoria' => $row[2] ?? null,
                     'proveedor_id' => $proveedor_id,
-                    'precio'       => is_numeric($row[4] ?? null) ? (int)$row[4] : 0,
-                    'stock'        => is_numeric($row[5] ?? null) ? (int)$row[5] : 0,
-                    'estado'       => in_array(strtolower(trim($row[6] ?? '')), ['activo', 'inactivo']) ? strtolower(trim($row[6])) : 'activo',
+                    'precio' => is_numeric($row[4] ?? null) ? (int)$row[4] : 0,
+                    'stock' => is_numeric($row[5] ?? null) ? (int)$row[5] : 0,
+                    'estado' => in_array(strtolower(trim($row[6] ?? '')), ['activo', 'inactivo']) ? strtolower(trim($row[6])) : 'activo',
                 ]);
                 $agregados++;
                 if (count($nombresAgregados) < 300) {
@@ -269,17 +264,17 @@ class ProductoController extends Controller
                 'ip_address' => request()->ip(),
             ]);
 
-            // Carga Masiva Completada Notificación
             auth()->user()->notify(new \App\Notifications\GeneralNotification(
                 'Carga Masiva Completada',
                 "Se importaron {$agregados} productos nuevos al sistema.",
                 'success',
                 route('productos.index')
-            ));
+                ));
 
             return redirect()->route('productos.index')
                 ->with('success', "Importación completada: {$agregados} añadidos, {$omitidos} omitidos por nombre duplicado.");
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             fclose($handle);
             return back()->withErrors(['error' => 'Error estructural al leer CSV. Asegúrese de que tenga el formato correcto: Nombre, Descripción, Categoría, Proveedor, Precio, Stock, Estado.']);
@@ -303,16 +298,15 @@ class ProductoController extends Controller
         $fileName = 'productos_' . now()->format('Y-m-d_H-i') . '.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires'             => '0',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
         $callback = function () use ($productos) {
             $handle = fopen('php://output', 'w');
-            // BOM para que Excel reconozca UTF-8
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
             fputcsv($handle, ['Nombre', 'Descripción', 'Categoría', 'Proveedor', 'Precio (CLP)', 'Stock', 'Estado'], ';');
             foreach ($productos as $p) {

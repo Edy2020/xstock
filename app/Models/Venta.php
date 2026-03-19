@@ -21,21 +21,18 @@ class Venta extends Model
     ];
 
     protected $casts = [
-        'subtotal'        => 'integer',
+        'subtotal' => 'integer',
         'descuento_total' => 'integer',
-        'total'           => 'integer',
+        'total' => 'integer',
     ];
 
-    // Relación con los detalles
     public function detalles()
     {
-        return $this->hasMany(DetalleVenta::class, 'venta_id');
+        return $this->hasMany(DetalleVenta::class , 'venta_id');
     }
-
-    // Relación con el vendedor
     public function vendedor()
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return $this->belongsTo(\App\Models\User::class , 'user_id');
     }
 
     public function getMetodoPagoFormatAttribute()

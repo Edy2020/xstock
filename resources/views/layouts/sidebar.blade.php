@@ -1,7 +1,5 @@
-{{-- Sidebar de navegación --}}
 <aside class="sidebar" id="sidebar">
 
-    {{-- Logo --}}
     <a href="{{ route('dashboard') }}" class="sidebar-logo">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -13,7 +11,6 @@
 
     <nav class="sidebar-nav">
 
-        {{-- INICIO --}}
         <div class="sidebar-section">
             <div class="sidebar-section-title">Inicio</div>
             <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -27,7 +24,6 @@
             </a>
         </div>
 
-        {{-- GESTIÓN --}}
         <div class="sidebar-section">
             <div class="sidebar-section-title">Gestión</div>
             @if(auth()->user()->hasPermission('productos.ver'))
@@ -75,7 +71,6 @@
             @endif
         </div>
 
-        {{-- ADMINISTRACIÓN --}}
         @if(auth()->user()->hasPermission('historial.ver') || auth()->user()->hasPermission('usuarios.gestionar') || auth()->user()->hasPermission('roles.gestionar'))
         <div class="sidebar-section">
             <div class="sidebar-section-title">Administración</div>
@@ -118,9 +113,7 @@
 
     </nav>
 
-    {{-- Footer del sidebar --}}
     <div class="sidebar-footer">
-        {{-- Tarjeta de Usuario Clickeable --}}
         <a href="{{ route('profile.edit') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none; flex:1; overflow:hidden; padding:4px; margin-left:-4px; border-radius:6px; transition:background 0.2s" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'" title="Ajustes de Perfil">
             <div class="user-avatar" style="flex-shrink:0">
                 {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
@@ -135,7 +128,6 @@
             </div>
         </a>
 
-        {{-- Botón Salir Circular --}}
         <form method="POST" action="{{ route('logout') }}" style="margin:0">
             @csrf
             <button type="submit" title="Cerrar sesión" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--color-danger); background:transparent; color:var(--color-danger); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; padding:0" onmouseover="this.style.background='var(--color-danger)'; this.style.color='#ffffff'" onmouseout="this.style.background='transparent'; this.style.color='var(--color-danger)'">
