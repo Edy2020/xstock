@@ -22,6 +22,7 @@
     <form method="POST" action="{{ route('ventas.store') }}" id="form-venta">
         @csrf
         <input type="hidden" name="productos" id="productos-input" value="[]">
+        <input type="hidden" name="descuento_global" id="descuento-global-input" value="0">
 
         <div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:flex-start">
 
@@ -96,8 +97,12 @@
                             <span style="color:var(--color-text-muted)">Subtotal</span>
                             <span id="summary-subtotal">$0</span>
                         </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center">
+                            <span style="color:var(--color-text-muted)">Desc. Global (%)</span>
+                            <input type="number" id="global-discount-ui" min="0" max="100" value="0" class="form-input" style="width:60px; text-align:center; padding:4px; font-size:12px">
+                        </div>
                         <div style="display:flex; justify-content:space-between">
-                            <span style="color:var(--color-text-muted)">Descuentos</span>
+                            <span style="color:var(--color-text-muted)">Descuentos Acum.</span>
                             <span id="summary-discount" style="color:var(--color-danger)">−$0</span>
                         </div>
                         <hr class="divider" style="margin:4px 0">
@@ -228,13 +233,46 @@
                     btnSubmit.disabled = false;
                 }
 
+                // Global discount logic
+                let globalDescPct = parseInt(document.getElementById('global-discount-ui').value) || 0;
+                if(globalDescPct < 0) globalDescPct = 0;
+                if(globalDescPct > 100) globalDescPct = 100;
+                document.getElementById('descuento-global-input').value = globalDescPct;
+
+                let currentSubtotalDescItems = grossSubtotal - totalDiscount;
+                let addGlobalDiscount = currentSubtotalDescItems * (globalDescPct / 100);
+                totalDiscount += addGlobalDiscount;
+
                 // Update summary
                 document.getElementById('summary-subtotal').innerText = formatCLP(grossSubtotal);
                 document.getElementById('summary-discount').innerText = '−' + formatCLP(totalDiscount);
                 document.getElementById('summary-total').innerText = formatCLP(grossSubtotal - totalDiscount);
 
                 attachEvents();
+                updateCatalogHighlights();
             }
+
+            function updateCatalogHighlights() {
+                const rows = catalogTbody.querySelectorAll('tr[data-pid]');
+                rows.forEach(tr => {
+                    const pid = parseInt(tr.dataset.pid);
+                    const cartItem = cart.find(c => c.id === pid);
+                    const stockCell = tr.querySelector('.cat-stock-cell');
+                    
+                    if (cartItem) {
+                        tr.style.backgroundColor = 'var(--color-bg-alt)';
+                        tr.style.boxShadow = 'inset 4px 0 0 var(--color-primary)';
+                        if (stockCell) stockCell.innerText = cartItem.stock - cartItem.cantidad;
+                    } else {
+                        tr.style.backgroundColor = 'transparent';
+                        tr.style.boxShadow = 'none';
+                        if (stockCell) stockCell.innerText = stockCell.dataset.originalStock;
+                    }
+                });
+            }
+
+            // Escuchar cambios en descuento global
+            document.getElementById('global-discount-ui').addEventListener('input', renderCart);
 
             function attachEvents() {
                 // Cantidad change
@@ -311,10 +349,14 @@
                     items.forEach(p => {
                         const tr = document.createElement('tr');
                         tr.style.cursor = 'pointer';
+                        tr.dataset.pid = p.id;
                         
+                        const cartItem = cart.find(c => c.id === p.id);
+                        const visualStock = cartItem ? (p.stock - cartItem.cantidad) : p.stock;
+
                         tr.innerHTML = `
                             <td style="font-weight:500">${p.nombre}</td>
-                            <td>${p.stock}</td>
+                            <td class="cat-stock-cell" data-original-stock="${p.stock}">${visualStock}</td>
                             <td>${formatCLP(p.precio)}</td>
                             <td style="text-align:center">
                                 <button type="button" class="btn btn-secondary btn-sm" style="padding:4px 8px; margin:0 auto">
@@ -324,9 +366,13 @@
                             </td>
                         `;
                         
-                        // Efecto de hover visual para saber que es clickable
-                        tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'var(--color-bg-alt)');
-                        tr.addEventListener('mouseleave', () => tr.style.backgroundColor = 'transparent');
+                        // Efecto de hover visual para saber que es clickable (si no está seleccionado ya)
+                        tr.addEventListener('mouseenter', () => {
+                            if (!cart.some(c => c.id === p.id)) tr.style.backgroundColor = 'var(--color-bg-alt)';
+                        });
+                        tr.addEventListener('mouseleave', () => {
+                            if (!cart.some(c => c.id === p.id)) tr.style.backgroundColor = 'transparent';
+                        });
                         
                         tr.addEventListener('click', () => {
                             addToCart(p);
@@ -351,6 +397,7 @@
 
             // Inicializar catálogo al cargar la página
             renderCatalog(catalogo);
+            updateCatalogHighlights();
 
             // --- Fin Lógica Autocompletado Búsqueda ---
 

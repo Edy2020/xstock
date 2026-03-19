@@ -45,7 +45,31 @@
                 <span class="topbar-title">{{ $pageTitle ?? 'Dashboard' }}</span>
             </div>
 
-            <div class="topbar-actions">
+            <div class="topbar-actions" style="display:flex; align-items:center; gap:12px; position:relative">
+                
+                <!-- Notificaciones -->
+                <div class="dropdown-notifications" style="position:relative">
+                    <button type="button" id="notif-toggle" title="Notificaciones" style="width:36px; height:36px; border-radius:50%; border:none; background:var(--color-bg); color:var(--color-text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:all 0.2s" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-muted)'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span id="notif-badge" style="position:absolute; top:2px; right:2px; background:var(--color-danger); color:white; font-size:10px; font-weight:700; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center; border:2px solid var(--color-surface); box-sizing:content-box">0</span>
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div id="notif-dropdown" style="display:none; position:absolute; top:45px; right:0; width:340px; background:var(--color-surface); border:1px solid var(--color-border); box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:8px; z-index:100; flex-direction:column; overflow:hidden;">
+                        <div style="padding:12px 16px; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center; background:var(--color-bg)">
+                            <span style="font-size:14px; font-weight:600; color:var(--color-text)">Notificaciones</span>
+                            <button id="notif-clear-all" style="font-size:12px; color:var(--color-primary); background:none; border:none; cursor:pointer; padding:0; font-weight:600;">Limpiar todas</button>
+                        </div>
+                        <div id="notif-list" style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column;">
+                            <!-- Items via JS -->
+                        </div>
+                        <div id="notif-empty" style="padding:30px 20px; text-align:center; color:var(--color-text-muted); font-size:13px; display:none;">
+                            No tienes notificaciones nuevas.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Modo Oscuro -->
                 <button type="button" id="theme-toggle" title="Cambiar tema" style="width:36px; height:36px; border-radius:50%; border:none; background:var(--color-bg); color:var(--color-text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-muted)'">
                     <!-- Icono Sol (Modo Claro) -->
                     <svg id="theme-icon-light" style="display:none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -118,6 +142,112 @@
             if (window.innerWidth <= 768) closeSidebar();
         });
     });
+
+    // ────────────────────────────────────────────────────────────
+    // Notificaciones
+    // ────────────────────────────────────────────────────────────
+    const notifToggle = document.getElementById('notif-toggle');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifBadge = document.getElementById('notif-badge');
+    const notifList = document.getElementById('notif-list');
+    const notifEmpty = document.getElementById('notif-empty');
+    const notifClearAll = document.getElementById('notif-clear-all');
+
+    if(notifToggle) {
+        notifToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = notifDropdown.style.display === 'flex';
+            notifDropdown.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) loadNotifications();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!notifToggle.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        function loadNotifications() {
+            fetch('/notificaciones/unread')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        renderNotifications(data.notifications, data.count);
+                    }
+                })
+                .catch(err => console.error('Error fetching notificaciones:', err));
+        }
+
+        function renderNotifications(notifications, count) {
+            if (count > 0) {
+                notifBadge.style.display = 'flex';
+                notifBadge.innerText = count > 9 ? '9+' : count;
+                notifEmpty.style.display = 'none';
+            } else {
+                notifBadge.style.display = 'none';
+                notifEmpty.style.display = 'block';
+            }
+
+            notifList.innerHTML = '';
+            notifications.forEach(n => {
+                const data = n.data || {};
+                const iconMap = {
+                    'success': '🟢', 'danger': '🔴', 'warning': '🟠', 'info': '🔵'
+                };
+                const icon = iconMap[data.tipo] || '⚪';
+
+                const item = document.createElement('div');
+                item.style.cssText = 'padding:12px 16px; border-bottom:1px solid var(--color-border); display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:background 0.2s; position:relative';
+                item.onmouseover = () => item.style.background = 'var(--color-bg)';
+                item.onmouseout = () => item.style.background = 'transparent';
+                
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                delBtn.style.cssText = 'position:absolute; right:12px; top:12px; background:none; border:none; color:var(--color-text-muted); cursor:pointer; padding:4px';
+                delBtn.title = "Eliminar notificación";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    markAsRead(n.id);
+                };
+
+                item.onclick = () => {
+                    if (data.url && data.url !== '#') {
+                        window.location.href = data.url;
+                    }
+                };
+
+                item.innerHTML = `
+                    <div style="font-size:16px; margin-top:2px">${icon}</div>
+                    <div style="flex:1; padding-right:24px;">
+                        <div style="font-size:13px; font-weight:600; color:var(--color-text); margin-bottom:4px">${data.titulo || 'Notificación'}</div>
+                        <div style="font-size:12px; color:var(--color-text-muted); line-height:1.4">${data.mensaje || ''}</div>
+                    </div>
+                `;
+                item.appendChild(delBtn);
+                notifList.appendChild(item);
+            });
+        }
+
+        function markAsRead(id) {
+            fetch(`/notificaciones/${id}/read`, {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')}
+            }).then(() => loadNotifications());
+        }
+
+        notifClearAll.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fetch('/notificaciones/clear-all', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')}
+            }).then(() => loadNotifications());
+        });
+
+        // Auto-load on init
+        loadNotifications();
+        // Polling (cada 60 segundos)
+        setInterval(loadNotifications, 60000);
+    }
 </script>
 
 </body>

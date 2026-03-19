@@ -86,6 +86,14 @@ class ProductoController extends Controller
             'ip_address' => request()->ip(),
         ]);
 
+        // Notificación de Producto Analido
+        auth()->user()->notify(new \App\Notifications\GeneralNotification(
+            'Nuevo Producto',
+            "Se ha añadido el producto '{$producto->nombre}'.",
+            'info',
+            route('productos.index')
+        ));
+
         return redirect()->route('productos.index')
             ->with('success', 'Producto "' . $request->nombre . '" añadido correctamente.');
     }
@@ -260,6 +268,14 @@ class ProductoController extends Controller
                 'detalle' => $detalleStr,
                 'ip_address' => request()->ip(),
             ]);
+
+            // Carga Masiva Completada Notificación
+            auth()->user()->notify(new \App\Notifications\GeneralNotification(
+                'Carga Masiva Completada',
+                "Se importaron {$agregados} productos nuevos al sistema.",
+                'success',
+                route('productos.index')
+            ));
 
             return redirect()->route('productos.index')
                 ->with('success', "Importación completada: {$agregados} añadidos, {$omitidos} omitidos por nombre duplicado.");

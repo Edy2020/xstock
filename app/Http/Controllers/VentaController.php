@@ -43,6 +43,7 @@ class VentaController extends Controller
             'metodo_pago' => 'required|string|in:Efectivo,Tarjeta de crédito,Tarjeta de débito,Transferencia',
             'notas'       => 'nullable|string',
             'productos'   => 'required|string', // Se espera un JSON string desde el JS
+            'descuento_global' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $productosJson = json_decode($request->productos, true);
@@ -97,9 +98,27 @@ class VentaController extends Controller
                 // Descontar stock
                 $producto->decrement('stock', $cantidad);
 
+                // Notificación Stock Crítico
+                if ($producto->stock <= 5) {
+                    auth()->user()->notify(new \App\Notifications\GeneralNotification(
+                        'Stock Crítico',
+                        "El producto '{$producto->nombre}' tiene " . $producto->stock . " unidades disponibles.",
+                        'danger',
+                        route('productos.index')
+                    ));
+                }
+
                 $subtotalVenta += ($precioUnitario * $cantidad);
                 $descuentoTotalVenta += $montoDescuento;
                 $totalVenta += $subtotalItem;
+            }
+
+            // Calcular descuento global si existe
+            $descuentoGlobalPorcentaje = (float) ($request->descuento_global ?? 0);
+            if ($descuentoGlobalPorcentaje > 0 && $descuentoGlobalPorcentaje <= 100) {
+                $montoDescGlobal = $totalVenta * ($descuentoGlobalPorcentaje / 100);
+                $totalVenta -= $montoDescGlobal;
+                $descuentoTotalVenta += $montoDescGlobal;
             }
 
             // 3. Actualizar totales de la Venta final
@@ -117,6 +136,14 @@ class VentaController extends Controller
                 'detalle' => 'Registró nueva venta #' . str_pad($venta->id, 5, '0', STR_PAD_LEFT) . ' por $' . number_format($totalVenta, 0, ',', '.'),
                 'ip_address' => request()->ip(),
             ]);
+
+            // Notificación Nueva Venta
+            auth()->user()->notify(new \App\Notifications\GeneralNotification(
+                'Venta Registrada',
+                'Se completó una venta por $' . number_format($totalVenta, 0, ',', '.'),
+                'success',
+                route('ventas.show', $venta->id)
+            ));
 
             DB::commit();
 

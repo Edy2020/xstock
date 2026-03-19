@@ -57,6 +57,21 @@ Route::middleware('auth')->group(function () {
     // Estadísticas
     Route::get('/estadisticas', [\App\Http\Controllers\EstadisticaController::class, 'index'])->name('estadisticas.index');
 
+    // Notificaciones
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/unread', [\App\Http\Controllers\NotificacionController::class, 'unread'])->name('unread');
+        Route::post('/{id}/read', [\App\Http\Controllers\NotificacionController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('/clear-all', [\App\Http\Controllers\NotificacionController::class, 'clearAll'])->name('clearAll');
+    });
+
+    // Recordatorios (Dashboard Calendar)
+    Route::prefix('recordatorios')->name('recordatorios.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\RecordatorioController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\RecordatorioController::class, 'store'])->name('store');
+        Route::put('/{recordatorio}', [\App\Http\Controllers\RecordatorioController::class, 'update'])->name('update');
+        Route::delete('/{recordatorio}', [\App\Http\Controllers\RecordatorioController::class, 'destroy'])->name('destroy');
+    });
+
     // ─── ADMINISTRACIÓN ──────────────────────────────────────
 
     // Historial / Logs
