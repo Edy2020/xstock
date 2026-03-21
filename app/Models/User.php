@@ -39,8 +39,6 @@ class User extends Authenticatable
 
     public function hasPermission($permissionStr)
     {
-        // Si el usuario no tiene rol, asumimos admin temporal para no romper en seed, o negamos.
-        // Mejor práctica, si es admin total devuelve true. Si el array lo tiene, lo dejamos pasar.
         if (!$this->role) {
             return false;
         }

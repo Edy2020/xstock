@@ -17,7 +17,6 @@
         </div>
     </div>
 
-    <!-- Agregar unos estilos temporales de impresion para que no salga todo el UI -->
     <style>
         @media print {
             .sidebar, .topbar, .btn { display: none !important; }
@@ -38,6 +37,14 @@
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted)">ID Transacción</span>
                         <span style="font-weight:600; font-family:monospace">#{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                        <span style="color:var(--color-text-muted)">Estado</span>
+                        @if($venta->estado === 'completada')
+                            <span class="badge" style="background:#dcfce7; color:#166534; padding: 4px 8px; font-size:11px;">Completada</span>
+                        @else
+                            <span class="badge" style="background:#fee2e2; color:#ef4444; padding: 4px 8px; font-size:11px;">Anulada</span>
+                        @endif
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted)">Fecha y Hora</span>
@@ -83,7 +90,9 @@
                     <div style="border-top:1px dashed var(--color-border); margin:4px 0"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:18px">
                         <span style="font-weight:600">Total Pagado</span>
-                        <span style="font-weight:700; color:var(--color-success)">${{ number_format($venta->total, 0, ',', '.') }}</span>
+                        <span style="font-weight:700; color:var(--color-success); {{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5; color:var(--color-text-muted);' : '' }}">
+                            ${{ number_format($venta->total, 0, ',', '.') }}
+                        </span>
                     </div>
                 </div>
             </div>

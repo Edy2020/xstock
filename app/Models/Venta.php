@@ -18,6 +18,7 @@ class Venta extends Model
         'total',
         'metodo_pago',
         'notas',
+        'estado',
     ];
 
     protected $casts = [

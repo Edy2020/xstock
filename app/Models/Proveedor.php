@@ -22,10 +22,9 @@ class Proveedor extends Model
         'estado',
     ];
 
-    // Relación: un proveedor tiene muchos productos
     public function productos()
     {
-        return $this->hasMany(Producto::class, 'proveedor_id');
+        return $this->hasMany(Producto::class , 'proveedor_id');
     }
 
     public function getBadgeEstadoAttribute(): string

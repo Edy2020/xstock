@@ -127,22 +127,37 @@
                         </td>
                         <td>{{ $venta->detalles->sum('cantidad') }} productos</td>
                         <td style="color:var(--color-danger)">
-                            {{ $venta->descuento_total > 0 ? '- $'.number_format($venta->descuento_total, 0, ',', '.') : '—' }}
+                            <span style="{{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5;' : '' }}">
+                                {{ $venta->descuento_total > 0 ? '- $'.number_format($venta->descuento_total, 0, ',', '.') : '—' }}
+                            </span>
                         </td>
-                        <td style="font-weight:700">
-                            ${{ number_format($venta->total, 0, ',', '.') }}
+                        <td style="font-weight:700; color: {{ $venta->estado === 'anulada' ? 'var(--color-text-muted)' : 'inherit' }}">
+                            <span style="{{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5;' : '' }}">
+                                ${{ number_format($venta->total, 0, ',', '.') }}
+                            </span>
                         </td>
                         <td>
                             <div style="display:flex; gap:6px">
-                                <!-- Podrímos añadir una vista Show próximamente -->
                                 @if(auth()->user()->hasPermission('ventas.anular'))
-                                <form method="POST" action="{{ route('ventas.destroy', $venta->id) }}"
-                                      onsubmit="return confirm('¿Anular esta venta permanentemente y reponer el stock?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-danger btn-sm">Anular / Eliminar</button>
-                                </form>
+                                    @if($venta->estado === 'completada')
+                                        <form method="POST" action="{{ route('ventas.anular', $venta->id) }}"
+                                              onsubmit="return confirm('¿Anular esta venta y reponer el stock correspondiente?')">
+                                            @csrf
+                                            <button class="btn btn-warning btn-sm" style="color:white; background-color: #f59e0b; border-color: #f59e0b;">Anular</button>
+                                        </form>
+                                    @else
+                                        <span class="badge" style="background:#fee2e2; color:#ef4444; padding: 4px 8px; font-size:11px; margin-right:4px;">Anulada</span>
+                                        <form method="POST" action="{{ route('ventas.destroy', $venta->id) }}"
+                                              onsubmit="return confirm('¿Eliminar esta venta permanentemente del registro?')">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-danger btn-sm">Eliminar</button>
+                                        </form>
+                                    @endif
                                 @else
-                                <span style="color:var(--color-text-muted); font-size:12px; font-style:italic">Acción restringida</span>
+                                    @if($venta->estado === 'anulada')
+                                        <span class="badge" style="background:#fee2e2; color:#ef4444; padding: 4px 8px; font-size:11px; margin-right:4px;">Anulada</span>
+                                    @endif
+                                    <span style="color:var(--color-text-muted); font-size:12px; font-style:italic">Acción restringida</span>
                                 @endif
                             </div>
                         </td>

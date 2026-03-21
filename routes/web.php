@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/export/excel', [\App\Http\Controllers\VentaController::class , 'exportExcel'])->name('export.excel');
             Route::get('/export/pdf', [\App\Http\Controllers\VentaController::class , 'exportPdf'])->name('export.pdf');
             Route::get('/{venta}', [\App\Http\Controllers\VentaController::class , 'show'])->name('show');
+            Route::post('/{venta}/anular', [\App\Http\Controllers\VentaController::class , 'anular'])->name('anular');
             Route::delete('/{venta}', [\App\Http\Controllers\VentaController::class , 'destroy'])->name('destroy');
         }
         );

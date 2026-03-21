@@ -26,7 +26,6 @@ class VentaController extends Controller
     {
         abort_unless(auth()->user()->hasPermission('ventas.crear'), 403, 'No tienes permiso para registrar ventas.');
 
-        // Solo enviar productos activos y con stock > 0
         $productos = Producto::where('estado', 'activo')
             ->where('stock', '>', 0)
             ->orderBy('nombre')
@@ -42,7 +41,7 @@ class VentaController extends Controller
         $request->validate([
             'metodo_pago' => 'required|string|in:Efectivo,Tarjeta de crédito,Tarjeta de débito,Transferencia',
             'notas'       => 'nullable|string',
-            'productos'   => 'required|string', // Se espera un JSON string desde el JS
+            'productos'   => 'required|string',
             'descuento_global' => 'nullable|numeric|min:0|max:100',
         ]);
 
@@ -59,7 +58,6 @@ class VentaController extends Controller
             $descuentoTotalVenta = 0;
             $totalVenta = 0;
 
-            // 1. Crear Venta base
             $venta = Venta::create([
                 'user_id'         => auth()->id(),
                 'subtotal'        => 0,
@@ -69,9 +67,7 @@ class VentaController extends Controller
                 'notas'           => $request->notas,
             ]);
 
-            // 2. Procesar cada detalle y descontar stock
             foreach ($productosJson as $item) {
-                // Bloquear la fila del producto para evitar lecturas concurrentes problemáticas
                 $producto = Producto::where('id', $item['id'])->lockForUpdate()->first();
 
                 if (!$producto || $producto->stock < $item['cantidad']) {
@@ -95,10 +91,9 @@ class VentaController extends Controller
                     'subtotal'             => $subtotalItem,
                 ]);
 
-                // Descontar stock
-                $producto->decrement('stock', $cantidad);
+                $producto->stock -= $cantidad;
+                $producto->save();
 
-                // Notificación Stock Crítico
                 if ($producto->stock <= 5) {
                     auth()->user()->notify(new \App\Notifications\GeneralNotification(
                         'Stock Crítico',
@@ -113,7 +108,6 @@ class VentaController extends Controller
                 $totalVenta += $subtotalItem;
             }
 
-            // Calcular descuento global si existe
             $descuentoGlobalPorcentaje = (float) ($request->descuento_global ?? 0);
             if ($descuentoGlobalPorcentaje > 0 && $descuentoGlobalPorcentaje <= 100) {
                 $montoDescGlobal = $totalVenta * ($descuentoGlobalPorcentaje / 100);
@@ -121,14 +115,11 @@ class VentaController extends Controller
                 $descuentoTotalVenta += $montoDescGlobal;
             }
 
-            // 3. Actualizar totales de la Venta final
             $venta->update([
                 'subtotal'        => $subtotalVenta,
                 'descuento_total' => $descuentoTotalVenta,
                 'total'           => $totalVenta,
             ]);
-
-            // Registrar Historial
             LogActividad::create([
                 'user_id' => auth()->id(),
                 'accion' => 'Creación',
@@ -137,7 +128,6 @@ class VentaController extends Controller
                 'ip_address' => request()->ip(),
             ]);
 
-            // Notificación Nueva Venta
             auth()->user()->notify(new \App\Notifications\GeneralNotification(
                 'Venta Registrada',
                 'Se completó una venta por $' . number_format($totalVenta, 0, ',', '.'),
@@ -162,11 +152,14 @@ class VentaController extends Controller
         return view('ventas.show', compact('venta'));
     }
 
-    public function destroy(Venta $venta)
+    public function anular(Venta $venta)
     {
         abort_unless(auth()->user()->hasPermission('ventas.anular'), 403, 'No tienes permiso para anular ventas.');
 
-        // Cancelar venta y revertir stock
+        if ($venta->estado === 'anulada') {
+            return back()->withErrors(['error' => 'La venta ya se encuentra anulada.']);
+        }
+
         try {
             DB::beginTransaction();
             
@@ -176,17 +169,13 @@ class VentaController extends Controller
                 }
             }
             
-            $ventaId = $venta->id;
-            $totalOriginal = $venta->total;
+            $venta->update(['estado' => 'anulada']);
 
-            $venta->delete();
-
-            // Registrar Historial
             LogActividad::create([
                 'user_id' => auth()->id(),
-                'accion' => 'Eliminación',
+                'accion' => 'Anulación',
                 'modulo' => 'Ventas',
-                'detalle' => 'Anuló/Eliminó venta #' . $ventaId . ' de $' . number_format($totalOriginal, 0, ',', '.'),
+                'detalle' => 'Anuló venta #' . str_pad($venta->id, 5, '0', STR_PAD_LEFT) . ' de $' . number_format($venta->total, 0, ',', '.'),
                 'ip_address' => request()->ip(),
             ]);
             
@@ -196,6 +185,39 @@ class VentaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al anular la venta: ' . $e->getMessage()]);
+        }
+    }
+
+    public function destroy(Venta $venta)
+    {
+        abort_unless(auth()->user()->hasPermission('ventas.anular'), 403, 'No tienes permiso para eliminar ventas.');
+
+        if ($venta->estado !== 'anulada') {
+            return back()->withErrors(['error' => 'La venta debe estar anulada antes de poder eliminarla permanentemente.']);
+        }
+
+        try {
+            DB::beginTransaction();
+            
+            $ventaId = $venta->id;
+            $totalOriginal = $venta->total;
+
+            $venta->delete();
+
+            LogActividad::create([
+                'user_id' => auth()->id(),
+                'accion' => 'Eliminación',
+                'modulo' => 'Ventas',
+                'detalle' => 'Eliminó permanentemente venta #' . str_pad($ventaId, 5, '0', STR_PAD_LEFT) . ' de $' . number_format($totalOriginal, 0, ',', '.'),
+                'ip_address' => request()->ip(),
+            ]);
+            
+            DB::commit();
+            
+            return redirect()->route('ventas.index')->with('success', 'Venta eliminada permanentemente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al eliminar la venta: ' . $e->getMessage()]);
         }
     }
     public function exportOptions()
