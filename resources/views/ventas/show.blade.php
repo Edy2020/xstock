@@ -23,9 +23,31 @@
             .content-area { padding: 0 !important; margin: 0 !important; width: 100% !important; background: white !important;}
             body { background: white; }
             .card { border: none !important; box-shadow: none !important; }
-            .page-header { margin-top: 0; padding-top:0; border-bottom:1px solid #000; padding-bottom:10px; }
+            .page-header, #success-alert { display: none !important; margin-top: 0; padding-top:0; border-bottom:1px solid #000; padding-bottom:10px; }
         }
     </style>
+
+    @if(session('success'))
+        <div id="success-alert" class="alert alert-success" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; transition:opacity 0.3s ease">
+            <div style="display:flex; align-items:center; gap:10px">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="document.getElementById('success-alert').style.opacity='0'; setTimeout(()=>document.getElementById('success-alert').remove(), 300)" style="background:none; border:none; color:inherit; cursor:pointer; padding:0; display:flex; align-items:center; opacity:0.7">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <script>
+            setTimeout(() => {
+                const alertEl = document.getElementById('success-alert');
+                if (alertEl) {
+                    alertEl.style.opacity = '0';
+                    setTimeout(() => alertEl.remove(), 300);
+                }
+            }, 3000);
+        </script>
+    @endif
+
 
     <div class="grid-2">
         <div style="display:flex; flex-direction:column; gap:16px">
@@ -80,13 +102,19 @@
                 <div class="card-title" style="margin-bottom:12px">Facturación</div>
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px; background:var(--color-bg); padding:16px; border-radius:8px">
                     <div style="display:flex; justify-content:space-between">
-                        <span style="color:var(--color-text-muted)">Subtotal de los productos</span>
-                        <span style="font-weight:500">${{ number_format($venta->subtotal, 0, ',', '.') }}</span>
+                        <span style="color:var(--color-text-muted)">Subtotal (Neto)</span>
+                        <span style="font-weight:500">${{ number_format(round($venta->subtotal / 1.19), 0, ',', '.') }}</span>
                     </div>
+                    <div style="display:flex; justify-content:space-between">
+                        <span style="color:var(--color-text-muted)">IVA (19%)</span>
+                        <span style="font-weight:500">${{ number_format(round($venta->total - ($venta->total / 1.19)), 0, ',', '.') }}</span>
+                    </div>
+                    @if($venta->descuento_total > 0)
                     <div style="display:flex; justify-content:space-between">
                         <span style="color:var(--color-text-muted)">Descuentos aplicados</span>
                         <span style="font-weight:500; color:var(--color-danger)">- ${{ number_format($venta->descuento_total, 0, ',', '.') }}</span>
                     </div>
+                    @endif
                     <div style="border-top:1px dashed var(--color-border); margin:4px 0"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:18px">
                         <span style="font-weight:600">Total Pagado</span>

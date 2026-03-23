@@ -76,7 +76,12 @@ Route::middleware('auth')->group(function () {
 
         // Roles
         Route::get('/roles', [\App\Http\Controllers\RoleController::class , 'index'])->name('roles.index')->middleware('permission:roles.gestionar');
+        Route::get('/roles/create', [\App\Http\Controllers\RoleController::class , 'create'])->name('roles.create')->middleware('permission:roles.gestionar');
+        Route::post('/roles', [\App\Http\Controllers\RoleController::class , 'store'])->name('roles.store')->middleware('permission:roles.gestionar');
+        Route::get('/roles/{role}/edit', [\App\Http\Controllers\RoleController::class , 'edit'])->name('roles.edit')->middleware('permission:roles.gestionar');
         Route::put('/roles/{role}', [\App\Http\Controllers\RoleController::class , 'update'])->name('roles.update')->middleware('permission:roles.gestionar');
+        Route::delete('/roles/{role}', [\App\Http\Controllers\RoleController::class , 'destroy'])->name('roles.destroy')->middleware('permission:roles.gestionar');
+        Route::get('/roles/{role}', [\App\Http\Controllers\RoleController::class , 'show'])->name('roles.show')->middleware('permission:roles.gestionar');
         Route::post('/roles/bulk', [\App\Http\Controllers\RoleController::class , 'updateBulk'])->name('roles.bulk')->middleware('permission:roles.gestionar');
     });
 

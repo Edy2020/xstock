@@ -137,7 +137,7 @@ class VentaController extends Controller
 
             DB::commit();
 
-            return redirect()->route('ventas.index')
+            return redirect()->route('ventas.show', $venta)
                 ->with('success', 'Venta registrada exitosamente. Total: $ ' . number_format($totalVenta, 0, ',', '.'));
 
         } catch (\Exception $e) {

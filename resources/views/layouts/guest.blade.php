@@ -190,8 +190,24 @@
                 font-weight: 400;
             }
 
+            .input-field:-webkit-autofill,
+            .input-field:-webkit-autofill:hover, 
+            .input-field:-webkit-autofill:focus, 
+            .input-field:-webkit-autofill:active {
+                -webkit-box-shadow: 0 0 0 30px #f3f4f6 inset !important;
+                -webkit-text-fill-color: var(--color-text) !important;
+                transition: background-color 5000s ease-in-out 0s;
+            }
+
+            [data-theme="dark"] .input-field:-webkit-autofill,
+            [data-theme="dark"] .input-field:-webkit-autofill:hover, 
+            [data-theme="dark"] .input-field:-webkit-autofill:focus, 
+            [data-theme="dark"] .input-field:-webkit-autofill:active {
+                -webkit-box-shadow: 0 0 0 30px #374151 inset !important;
+            }
+
             .btn-submit {
-                background: var(--color-primary); /* Azul lleno */
+                background: var(--color-primary);
                 color: #ffffff;
                 border: none;
                 padding: 14px 50px;
