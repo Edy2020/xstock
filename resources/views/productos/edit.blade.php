@@ -13,7 +13,7 @@
 
     <div style="max-width:560px">
         <div class="card">
-            <form method="POST" action="{{ route('productos.update', $producto) }}" id="form-update">
+            <form method="POST" action="{{ route('productos.update', $producto) }}" id="form-update" enctype="multipart/form-data">
                 @csrf @method('PUT')
 
                 @if($errors->any())
@@ -47,7 +47,24 @@
 
                     <div class="form-group">
                         <label class="form-label" for="descripcion">Descripción (Opcional)</label>
-                        <textarea id="descripcion" name="descripcion" class="form-textarea" placeholder="Breve descripción o caracteristicas del producto...">{{ old('descripcion', $producto->descripcion) }}</textarea>
+                        <textarea id="descripcion" name="descripcion" class="form-textarea" placeholder="Breve descripción o caracteristicas del producto...">{{ old('descripcion', $producto->descripcion) }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Imagen del producto</label>
+                        <div id="imagen-dropzone" style="border:2px dashed var(--color-border); border-radius:10px; padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s, background 0.2s; position:relative; overflow:hidden">
+                            <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp" style="position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2">
+                            <div id="imagen-placeholder" style="display:{{ $producto->imagen ? 'none' : 'flex' }}; flex-direction:column; align-items:center; gap:8px; color:var(--color-text-muted)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                <span style="font-size:13px">Arrastra una imagen o haz clic para seleccionar</span>
+                                <span style="font-size:11px; opacity:0.6">JPG, PNG o WebP — Máx. 2 MB</span>
+                            </div>
+                            <div id="imagen-preview" style="display:{{ $producto->imagen ? 'block' : 'none' }}; position:relative">
+                                <img id="imagen-preview-img" src="{{ $producto->imagen ? asset('storage/' . $producto->imagen) : '' }}" alt="Vista previa" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain">
+                                <button type="button" id="imagen-remove" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; z-index:3" title="Quitar imagen">&times;</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="eliminar_imagen" name="eliminar_imagen" value="0">
                     </div>
 
                     <div class="form-group">
@@ -128,3 +145,58 @@
     </div>
 
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('imagen');
+        const dropzone = document.getElementById('imagen-dropzone');
+        const placeholder = document.getElementById('imagen-placeholder');
+        const preview = document.getElementById('imagen-preview');
+        const previewImg = document.getElementById('imagen-preview-img');
+        const removeBtn = document.getElementById('imagen-remove');
+        const eliminarInput = document.getElementById('eliminar_imagen');
+
+        function showPreview(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                placeholder.style.display = 'none';
+                preview.style.display = 'block';
+                eliminarInput.value = '0';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        input.addEventListener('change', () => {
+            if (input.files[0]) showPreview(input.files[0]);
+        });
+
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            input.value = '';
+            preview.style.display = 'none';
+            placeholder.style.display = 'flex';
+            eliminarInput.value = '1';
+        });
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'var(--color-primary)';
+            dropzone.style.background = 'var(--color-primary-light, rgba(99,102,241,0.05))';
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.style.borderColor = '';
+            dropzone.style.background = '';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = '';
+            dropzone.style.background = '';
+            if (e.dataTransfer.files[0]) {
+                input.files = e.dataTransfer.files;
+                showPreview(e.dataTransfer.files[0]);
+            }
+        });
+    });
+</script>

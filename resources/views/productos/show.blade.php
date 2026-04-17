@@ -19,6 +19,12 @@
     <div class="split-layout">
 
         <div style="display:flex; flex-direction:column; gap:16px">
+            @if($producto->imagen)
+            <div class="card" style="padding:0; overflow:hidden">
+                <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}"
+                     style="width:100%; max-height:320px; object-fit:cover; display:block">
+            </div>
+            @endif
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">Información general</div>

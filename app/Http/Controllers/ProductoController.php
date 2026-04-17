@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\LogActividad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductoController extends Controller
@@ -47,6 +48,7 @@ class ProductoController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255|unique:productos,nombre',
             'descripcion' => 'nullable|string',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
@@ -55,6 +57,9 @@ class ProductoController extends Controller
         ], [
             'nombre.required' => 'El nombre del producto es obligatorio.',
             'nombre.unique' => 'Ya existe un producto registrado con este mismo nombre.',
+            'imagen.image' => 'El archivo debe ser una imagen.',
+            'imagen.mimes' => 'La imagen debe ser JPG, PNG o WebP.',
+            'imagen.max' => 'La imagen no puede pesar más de 2 MB.',
             'precio.required' => 'El precio es obligatorio.',
             'precio.integer' => 'El precio debe ser un número entero (CLP).',
             'stock.required' => 'El stock es obligatorio.',
@@ -72,8 +77,12 @@ class ProductoController extends Controller
         }
 
         $data = $validated;
-        unset($data['proveedor_nombre']);
+        unset($data['proveedor_nombre'], $data['imagen']);
         $data['proveedor_id'] = $proveedor_id;
+
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
 
         $producto = Producto::create($data);
 
@@ -131,6 +140,7 @@ class ProductoController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255|unique:productos,nombre,' . $producto->id,
             'descripcion' => 'nullable|string',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
@@ -138,6 +148,9 @@ class ProductoController extends Controller
             'proveedor_nombre' => 'nullable|string|max:255',
         ], [
             'nombre.unique' => 'Ya existe otro producto registrado con este mismo nombre.',
+            'imagen.image' => 'El archivo debe ser una imagen.',
+            'imagen.mimes' => 'La imagen debe ser JPG, PNG o WebP.',
+            'imagen.max' => 'La imagen no puede pesar más de 2 MB.',
         ]);
 
         $proveedor_id = null;
@@ -150,8 +163,22 @@ class ProductoController extends Controller
         }
 
         $data = $validated;
-        unset($data['proveedor_nombre']);
+        unset($data['proveedor_nombre'], $data['imagen']);
         $data['proveedor_id'] = $proveedor_id;
+
+        if ($request->hasFile('imagen')) {
+            if ($producto->imagen) {
+                Storage::disk('public')->delete($producto->imagen);
+            }
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
+
+        if ($request->boolean('eliminar_imagen') && !$request->hasFile('imagen')) {
+            if ($producto->imagen) {
+                Storage::disk('public')->delete($producto->imagen);
+            }
+            $data['imagen'] = null;
+        }
 
         $producto->update($data);
 
