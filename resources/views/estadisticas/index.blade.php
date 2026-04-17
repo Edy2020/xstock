@@ -7,29 +7,36 @@
         </div>
         {{-- Selector de periodo --}}
         <div style="display:flex; gap:6px">
-            <a href="?periodo=dia" class="btn btn-secondary btn-sm {{ request('periodo','semana')==='dia' ? 'active' : '' }}">Hoy</a>
-            <a href="?periodo=semana" class="btn {{ request('periodo','semana')==='semana' ? 'btn-primary' : 'btn-secondary' }} btn-sm">Semana</a>
-            <a href="?periodo=mes" class="btn btn-secondary btn-sm {{ request('periodo','semana')==='mes' ? 'active' : '' }}">Mes</a>
-            <a href="?periodo=anio" class="btn btn-secondary btn-sm {{ request('periodo','semana')==='anio' ? 'active' : '' }}">Año</a>
+            <button type="button" onclick="setPeriodData('dia')" class="btn btn-secondary btn-sm filter-btn-period" data-period="dia">Hoy</button>
+            <button type="button" onclick="setPeriodData('semana')" class="btn btn-primary btn-sm filter-btn-period" data-period="semana">Semana</button>
+            <button type="button" onclick="setPeriodData('mes')" class="btn btn-secondary btn-sm filter-btn-period" data-period="mes">Mes</button>
+            <button type="button" onclick="setPeriodData('anio')" class="btn btn-secondary btn-sm filter-btn-period" data-period="anio">Año</button>
         </div>
     </div>
 
+    <div id="stats-tabs-container" style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--color-border); padding-bottom:12px; overflow-x:auto; -webkit-overflow-scrolling: touch;">
+        <button onclick="switchStatsTab('general')" id="tab-btn-general" class="btn btn-primary" style="border-radius:20px; flex-shrink:0">General</button>
+        <button onclick="switchStatsTab('ventas')" id="tab-btn-ventas" class="btn btn-secondary" style="border-radius:20px; flex-shrink:0">Ventas</button>
+        <button onclick="switchStatsTab('inventario')" id="tab-btn-inventario" class="btn btn-secondary" style="border-radius:20px; flex-shrink:0">Inventario y Alertas</button>
+    </div>
+
+    <div id="tab-pane-general">
     {{-- KPIs principales --}}
     <div class="grid-4" style="margin-bottom:24px">
         <div class="stat-card">
             <div class="stat-icon" style="background:#eff6ff">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             </div>
-            <div class="stat-label">Total ventas ({{ $periodo }})</div>
-            <div class="stat-value">{{ number_format($ventasPeriodo, 0, ',', '.') }}</div>
+            <div class="stat-label" id="lbl-ventas">{{ $periodData['semana']['labelVentas'] ?? 'Total ventas' }}</div>
+            <div class="stat-value" id="val-ventas">{{ $periodData['semana']['ventas'] ?? 0 }}</div>
             <div class="stat-change"><span class="badge badge-green" style="font-size:10.5px">Actualizado recientemente</span></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#f0fdf4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
-            <div class="stat-label">Ingresos ({{ $periodo }})</div>
-            <div class="stat-value">${{ number_format($ingresosPeriodo, 0, ',', '.') }}</div>
+            <div class="stat-label" id="lbl-ingresos">{{ $periodData['semana']['labelIngresos'] ?? 'Ingresos' }}</div>
+            <div class="stat-value" id="val-ingresos">{{ $periodData['semana']['ingresos'] ?? '$0' }}</div>
             <div class="stat-change"><span class="badge badge-green" style="font-size:10.5px">Dinero bruto ingresado</span></div>
         </div>
         <div class="stat-card">
@@ -53,7 +60,9 @@
             @endif
         </div>
     </div>
+    </div> <!-- /tab-pane-general -->
 
+    <div id="tab-pane-ventas" style="display:none;">
     <div class="grid-2" style="margin-bottom:20px">
 
         {{-- Ventas por día (tabla de muestra) --}}
@@ -64,7 +73,7 @@
                     <div class="card-subtitle">Comparativa con semana anterior</div>
                 </div>
             </div>
-            <div class="table-wrapper" style="border:none; margin:0 -20px">
+            <div class="table-wrapper" style="border:none">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -113,12 +122,14 @@
         </div>
 
     </div>
+    </div> <!-- /tab-pane-ventas -->
 
+    <div id="tab-pane-inventario" style="display:none;">
     {{-- Stock por categoría y tendencia --}}
     <div class="grid-2">
         <div class="card">
             <div class="card-title" style="margin-bottom:14px">Inventario por Categoría</div>
-            <div class="table-wrapper" style="border:none; margin:0 -20px">
+            <div class="table-wrapper" style="border:none">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -165,7 +176,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             Productos con Stock Crítico ({{ $stockCritico }})
         </div>
-        <div class="table-wrapper" style="border:none; margin:0 -20px">
+        <div class="table-wrapper" style="border:none">
             <table class="data-table">
                 <thead style="background: rgba(220, 38, 38, 0.05);">
                     <tr>
@@ -201,5 +212,48 @@
         </div>
     </div>
     @endif
+    </div> <!-- /tab-pane-inventario -->
 
+    <script>
+    const periodData = @json($periodData ?? []);
+
+    function setPeriodData(period) {
+        document.querySelectorAll('.filter-btn-period').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+            if(btn.dataset.period === period) {
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+            }
+        });
+
+        const data = periodData[period];
+        if(data) {
+            document.getElementById('lbl-ventas').innerText = data.labelVentas;
+            document.getElementById('val-ventas').innerText = data.ventas;
+            document.getElementById('lbl-ingresos').innerText = data.labelIngresos;
+            document.getElementById('val-ingresos').innerText = data.ingresos;
+        }
+    }
+
+    function switchStatsTab(tabName) {
+        document.getElementById('tab-pane-general').style.display = 'none';
+        document.getElementById('tab-pane-ventas').style.display = 'none';
+        document.getElementById('tab-pane-inventario').style.display = 'none';
+
+        document.getElementById('tab-btn-general').className = 'btn btn-secondary';
+        document.getElementById('tab-btn-ventas').className = 'btn btn-secondary';
+        document.getElementById('tab-btn-inventario').className = 'btn btn-secondary';
+
+        document.getElementById('tab-pane-' + tabName).style.display = 'block';
+        document.getElementById('tab-btn-' + tabName).className = 'btn btn-primary';
+    }
+    </script>
+
+    <style>
+    @media (min-width: 769px) {
+        #stats-tabs-container { display: none !important; }
+        #tab-pane-general, #tab-pane-ventas, #tab-pane-inventario { display: block !important; }
+    }
+    </style>
 </x-app-layout>

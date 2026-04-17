@@ -13,18 +13,22 @@ class EstadisticaController extends Controller
 {
     public function index(Request $request)
     {
-        $periodo = $request->query('periodo', 'semana');
+        $periodData = [];
+        $timeframes = [
+            'dia' => Carbon::today(),
+            'semana' => Carbon::now()->startOfWeek(),
+            'mes' => Carbon::now()->startOfMonth(),
+            'anio' => Carbon::now()->startOfYear(),
+        ];
 
-        $startDate = match ($periodo) {
-                'dia' => Carbon::today(),
-                'semana' => Carbon::now()->startOfWeek(),
-                'mes' => Carbon::now()->startOfMonth(),
-                'anio' => Carbon::now()->startOfYear(),
-                default => Carbon::now()->startOfWeek(),
-            };
-
-        $ventasPeriodo = Venta::where('created_at', '>=', $startDate)->count();
-        $ingresosPeriodo = Venta::where('created_at', '>=', $startDate)->sum('total');
+        foreach ($timeframes as $key => $startDate) {
+            $periodData[$key] = [
+                'ventas' => number_format(Venta::where('created_at', '>=', $startDate)->count(), 0, ',', '.'),
+                'ingresos' => '$' . number_format(Venta::where('created_at', '>=', $startDate)->sum('total'), 0, ',', '.'),
+                'labelVentas' => 'Total ventas (' . $key . ')',
+                'labelIngresos' => 'Ingresos (' . $key . ')'
+            ];
+        }
 
         $totalProductos = Producto::count();
         $nuevoEsteMes = Producto::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
@@ -86,7 +90,7 @@ class EstadisticaController extends Controller
         }
 
         return view('estadisticas.index', compact(
-            'periodo', 'ventasPeriodo', 'ingresosPeriodo', 'totalProductos', 'nuevoEsteMes', 'stockCritico', 'productosCriticos',
+            'periodData', 'totalProductos', 'nuevoEsteMes', 'stockCritico', 'productosCriticos',
             'diasData', 'top', 'inventarioCat', 'semanasData'
         ));
     }

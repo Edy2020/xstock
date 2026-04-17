@@ -27,7 +27,7 @@
             <p>Gestiona el inventario, precios y stock</p>
         </div>
         @if(auth()->user()->hasPermission('productos.crear'))
-        <div style="display:flex; gap:8px">
+        <div class="header-actions">
             <form action="{{ route('productos.import') }}" method="POST" enctype="multipart/form-data" id="form-import" style="display:none">
                 @csrf
                 <input type="file" name="archivo_csv" id="archivo_csv" accept=".csv" onchange="document.getElementById('form-import').submit()">

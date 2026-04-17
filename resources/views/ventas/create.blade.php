@@ -24,7 +24,7 @@
         <input type="hidden" name="productos" id="productos-input" value="[]">
         <input type="hidden" name="descuento_global" id="descuento-global-input" value="0">
 
-        <div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:flex-start">
+        <div class="split-layout">
 
             {{-- Panel izquierdo: selección de productos --}}
             <div style="display:flex; flex-direction:column; gap:16px">
@@ -38,7 +38,7 @@
                     </div>
                     
                     {{-- Catálogo en tabla con slider vertical --}}
-                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 6px;">
+                    <div style="max-height: 250px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--color-border); border-radius: 6px;">
                         <table class="data-table" style="margin: 0; min-width: 100%">
                             <thead style="position: sticky; top: 0; z-index: 10; background: var(--color-bg-alt);">
                                 <tr>
@@ -60,7 +60,7 @@
                 {{-- Tabla de items en la venta (Carrito) --}}
                 <div class="card">
                     <div class="card-title" style="margin-bottom:12px">Productos en esta venta</div>
-                    <div class="table-wrapper" style="border:none; margin:0 -20px">
+                    <div class="table-wrapper">
                         <table class="data-table">
                             <thead>
                                 <tr>

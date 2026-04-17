@@ -8,6 +8,13 @@
         </div>
     </div>
 
+    <div id="dash-tabs-container" style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--color-border); padding-bottom:12px; overflow-x:auto; -webkit-overflow-scrolling: touch;">
+        <button onclick="switchDashTab('resumen')" id="tab-btn-resumen" class="btn btn-primary" style="border-radius:20px; flex-shrink:0">Resumen</button>
+        <button onclick="switchDashTab('operaciones')" id="tab-btn-operaciones" class="btn btn-secondary" style="border-radius:20px; flex-shrink:0">Ventas y Stock</button>
+        <button onclick="switchDashTab('calendario')" id="tab-btn-calendario" class="btn btn-secondary" style="border-radius:20px; flex-shrink:0">Calendario y Tareas</button>
+    </div>
+
+    <div id="tab-pane-resumen">
     <div class="grid-stats" style="margin-bottom:24px">
         <div class="stat-card">
             <div class="stat-icon" style="background:#eff6ff">
@@ -104,7 +111,9 @@
         </a>
     </div>
 </div>
+    </div> <!-- /tab-pane-resumen -->
 
+    <div id="tab-pane-operaciones" style="display:none;">
 <div class="grid-2">
 
         <div class="card">
@@ -193,7 +202,9 @@
         </div>
 
     </div>
+    </div> <!-- /tab-pane-operaciones -->
 
+    <div id="tab-pane-calendario" style="display:none;">
     <div class="grid-2" style="gap:24px; align-items:start; margin-bottom:24px; margin-top:24px">
         <div class="card" style="padding:16px;">
             <div id="calendar" style="min-height:400px; font-size:12px"></div>
@@ -209,6 +220,7 @@
             </div>
         </div>
     </div>
+    </div> <!-- /tab-pane-calendario -->
 
     <div id="reminder-modal" class="modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:99; align-items:center; justify-content:center;">
         <div class="card" style="width:100%; max-width:400px; padding:24px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.1); border-radius:10px">
@@ -284,6 +296,23 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     
     <script>
+        function switchDashTab(tabName) {
+            document.getElementById('tab-pane-resumen').style.display = 'none';
+            document.getElementById('tab-pane-operaciones').style.display = 'none';
+            document.getElementById('tab-pane-calendario').style.display = 'none';
+
+            document.getElementById('tab-btn-resumen').className = 'btn btn-secondary';
+            document.getElementById('tab-btn-operaciones').className = 'btn btn-secondary';
+            document.getElementById('tab-btn-calendario').className = 'btn btn-secondary';
+
+            document.getElementById('tab-pane-' + tabName).style.display = 'block';
+            document.getElementById('tab-btn-' + tabName).className = 'btn btn-primary';
+
+            if (tabName === 'calendario' && calendar) {
+                setTimeout(() => calendar.render(), 50);
+            }
+        }
+
         let calendar;
         const modal = document.getElementById('reminder-modal');
         const form = document.getElementById('reminder-form');
@@ -545,6 +574,11 @@
         .fc-theme-standard td, .fc-theme-standard th { border-color: var(--color-border); }
         
         .fc-event { border: none !important; border-radius: 4px; padding: 2px 4px; font-size: 11.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; }
+
+        @media (min-width: 769px) {
+            #dash-tabs-container { display: none !important; }
+            #tab-pane-resumen, #tab-pane-operaciones, #tab-pane-calendario { display: block !important; }
+        }
     </style>
 
 </x-app-layout>
