@@ -5,7 +5,7 @@
             <h1>{{ $proveedor->nombre }}</h1>
             <p style="font-family:monospace">{{ $proveedor->ruc ? 'RUT/RUC/ID: ' . $proveedor->ruc : 'Sin Identificador Registrado' }}</p>
         </div>
-        <div style="display:flex; gap:8px">
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
             @if(auth()->user()->hasPermission('proveedores.editar'))
             <a href="{{ route('proveedores.edit', $proveedor) }}" class="btn btn-primary">Editar</a>
             @endif
@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <div class="grid-2">
+    <div class="split-layout">
 
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
@@ -26,20 +26,20 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; font-size:13px">
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Razón Social</span>
-                        <span style="font-weight:500">{{ $proveedor->nombre }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Razón Social</span>
+                        <span style="font-weight:500; text-align:right; word-break:break-word; max-width:70%">{{ $proveedor->nombre }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Persona de Contacto</span>
-                        <span>{{ $proveedor->contacto ?? '—' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Persona de Contacto</span>
+                        <span style="text-align:right; word-break:break-word; max-width:70%">{{ $proveedor->contacto ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Teléfono / Móvil</span>
-                        <span>{{ $proveedor->telefono ?? '—' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Teléfono / Móvil</span>
+                        <span style="text-align:right">{{ $proveedor->telefono ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Correo Electrónico</span>
-                        <span style="color:var(--color-primary)">{{ $proveedor->email ?? '—' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Correo Electrónico</span>
+                        <span style="color:var(--color-primary); text-align:right; word-break:break-word; max-width:70%">{{ $proveedor->email ?? '—' }}</span>
                     </div>
                     <div style="display:flex; flex-direction:column; padding-bottom:4px">
                         <span style="color:var(--color-text-muted); margin-bottom:4px">Dirección Física</span>
@@ -68,9 +68,9 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Catálogo Ligado a este Proveedor</div>
-                <div class="table-wrapper" style="border:none; margin:0 -20px; max-height: 400px; overflow-y: auto;">
+                <div class="table-wrapper" style="border:none; max-height: 400px; overflow-y: auto;">
                     <table class="data-table">
                         <thead>
                             <tr>

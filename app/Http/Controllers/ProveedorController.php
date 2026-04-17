@@ -8,21 +8,9 @@ use Illuminate\Http\Request;
 
 class ProveedorController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Proveedor::withCount('productos');
-
-        if ($request->filled('buscar')) {
-            $query->where('nombre', 'like', '%' . $request->buscar . '%')
-                ->orWhere('ruc', 'like', '%' . $request->buscar . '%')
-                ->orWhere('contacto', 'like', '%' . $request->buscar . '%');
-        }
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-
-        $proveedores = $query->latest()->get();
+        $proveedores = Proveedor::withCount('productos')->latest()->get();
 
         return view('proveedores.index', compact('proveedores'));
     }

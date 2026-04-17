@@ -44,30 +44,26 @@
         @endif
     </div>
 
-    <form method="GET" action="{{ route('proveedores.index') }}">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
-            <div class="search-bar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" name="buscar" placeholder="Buscar proveedor..." value="{{ request('buscar') }}">
-            </div>
-            <select name="estado" class="form-select" style="width:auto; padding:7px 11px" onchange="this.form.submit()">
-                <option value="">Todos los estados</option>
-                <option value="activo"   {{ request('estado') === 'activo'   ? 'selected' : '' }}>Activo</option>
-                <option value="inactivo" {{ request('estado') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-            </select>
-            @if(request()->hasAny(['buscar','estado']))
-                <a href="{{ route('proveedores.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
-            @endif
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
+        <div class="search-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="filtro-buscar" placeholder="Buscar proveedor..." oninput="filtrarProveedores()">
         </div>
-    </form>
+        <select id="filtro-estado" class="form-select" style="width:auto; padding:7px 11px" onchange="filtrarProveedores()">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+        </select>
+        <button type="button" id="btn-limpiar" onclick="limpiarFiltros()" class="btn btn-secondary btn-sm" style="display:none">Limpiar</button>
+    </div>
 
     @if($proveedores->isEmpty())
         <div class="card">
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                 <h3>No hay proveedores</h3>
-                <p>{{ request()->hasAny(['buscar','estado']) ? 'Ningún proveedor coincide con los filtros.' : 'Añade tu primer proveedor para comenzar.' }}</p>
-                @if(!request()->hasAny(['buscar','estado']) && auth()->user()->hasPermission('proveedores.crear'))
+                <p>Añade tu primer proveedor para comenzar.</p>
+                @if(auth()->user()->hasPermission('proveedores.crear'))
                     <a href="{{ route('proveedores.create') }}" class="btn btn-primary" style="margin-top:8px">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Añadir Proveedor
@@ -91,7 +87,7 @@
                 </thead>
                 <tbody>
                     @foreach($proveedores as $prov)
-                    <tr style="cursor:pointer" onclick="if(!event.target.closest('.btn') && !event.target.closest('form')) window.location='{{ route('proveedores.show', $prov) }}'">
+                    <tr class="proveedor-row" data-estado="{{ $prov->estado }}" data-busqueda="{{ strtolower($prov->nombre . ' ' . ($prov->ruc ?? '') . ' ' . ($prov->contacto ?? '')) }}" style="cursor:pointer" onclick="if(!event.target.closest('.btn') && !event.target.closest('form')) window.location='{{ route('proveedores.show', $prov) }}'">
                         <td style="font-weight:500">{{ $prov->nombre }}</td>
                         <td class="col-hide-mobile" style="color:var(--color-text-muted)">{{ $prov->ruc ?? '—' }}</td>
                         <td class="col-hide-mobile" style="color:var(--color-text-muted)">{{ $prov->contacto ?? '—' }}</td>
@@ -121,9 +117,55 @@
                         </td>
                     </tr>
                     @endforeach
+                    <tr id="empty-filter-row" style="display:none;">
+                        <td colspan="7" style="text-align:center; padding:30px; color:var(--color-text-muted);">
+                            Ningún proveedor coincide con los filtros.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     @endif
 
+    <script>
+    function filtrarProveedores() {
+        const buscar = document.getElementById('filtro-buscar').value.toLowerCase().trim();
+        const estado = document.getElementById('filtro-estado').value;
+        const filas = document.querySelectorAll('.proveedor-row');
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const textBusqueda = fila.getAttribute('data-busqueda');
+            const est = fila.getAttribute('data-estado');
+
+            const coincideBusqueda = buscar === '' || textBusqueda.includes(buscar);
+            const coincideEstado = estado === '' || est === estado;
+
+            if (coincideBusqueda && coincideEstado) {
+                fila.style.display = '';
+                visibles++;
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+
+        const emptyRow = document.getElementById('empty-filter-row');
+        if (emptyRow) {
+            emptyRow.style.display = visibles === 0 ? '' : 'none';
+        }
+
+        const btnLimpiar = document.getElementById('btn-limpiar');
+        if (buscar !== '' || estado !== '') {
+            btnLimpiar.style.display = '';
+        } else {
+            btnLimpiar.style.display = 'none';
+        }
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('filtro-buscar').value = '';
+        document.getElementById('filtro-estado').value = '';
+        filtrarProveedores();
+    }
+    </script>
 </x-app-layout>

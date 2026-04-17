@@ -5,7 +5,7 @@
             <h1>Venta #{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</h1>
             <p>Emitida el {{ $venta->created_at->format('d/m/Y \a \l\a\s H:i') }}</p>
         </div>
-        <div style="display:flex; gap:8px">
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
             <button class="btn btn-primary" onclick="window.print()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 Imprimir Recibo
@@ -49,7 +49,7 @@
     @endif
 
 
-    <div class="grid-2">
+    <div class="split-layout">
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
                 <div class="card-header">
@@ -57,11 +57,11 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; font-size:13px">
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">ID Transacción</span>
-                        <span style="font-weight:600; font-family:monospace">#{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">ID Transacción</span>
+                        <span style="font-weight:600; font-family:monospace; text-align:right; word-break:break-word;">#{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Estado</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Estado</span>
                         @if($venta->estado === 'completada')
                             <span class="badge" style="background:#dcfce7; color:#166534; padding: 4px 8px; font-size:11px;">Completada</span>
                         @else
@@ -69,20 +69,20 @@
                         @endif
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Fecha y Hora</span>
-                        <span>{{ $venta->created_at->format('d/m/Y H:i:s') }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Fecha y Hora</span>
+                        <span style="text-align:right">{{ $venta->created_at->format('d/m/Y H:i:s') }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Método de Pago</span>
-                        <span style="text-transform:capitalize; color:var(--color-primary); font-weight:500">{{ $venta->metodo_pago }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Método de Pago</span>
+                        <span style="text-transform:capitalize; color:var(--color-primary); font-weight:500; text-align:right">{{ $venta->metodo_pago }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Vendedor</span>
-                        <span style="font-weight:500">{{ $venta->vendedor->name ?? 'No registrado' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Vendedor</span>
+                        <span style="font-weight:500; text-align:right; word-break:break-word;">{{ $venta->vendedor->name ?? 'No registrado' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; padding-bottom:4px">
-                        <span style="color:var(--color-text-muted)">Unidades Totales</span>
-                        <span>{{ $venta->detalles->sum('cantidad') }} artículos</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Unidades Totales</span>
+                        <span style="text-align:right">{{ $venta->detalles->sum('cantidad') }} artículos</span>
                     </div>
                 </div>
             </div>
@@ -125,9 +125,9 @@
                 </div>
             </div>
             
-            <div class="card">
+            <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Productos Facturados</div>
-                <div class="table-wrapper" style="border:none; margin:0 -20px; overflow-y:auto">
+                <div class="table-wrapper" style="border:none; overflow-y:auto">
                     <table class="data-table">
                         <thead>
                             <tr>

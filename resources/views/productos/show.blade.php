@@ -5,7 +5,7 @@
             <h1>{{ $producto->nombre }}</h1>
             <p style="font-family:monospace">ID-{{ str_pad($producto->id, 5, '0', STR_PAD_LEFT) }}</p>
         </div>
-        <div style="display:flex; gap:8px">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
             @if(auth()->user()->hasPermission('productos.editar'))
             <a href="{{ route('productos.edit', $producto) }}" class="btn btn-primary">Editar</a>
             @endif
@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <div class="grid-2">
+    <div class="split-layout">
 
         <div style="display:flex; flex-direction:column; gap:16px">
             <div class="card">
@@ -26,20 +26,20 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; font-size:13px">
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Nombre</span>
-                        <span style="font-weight:500">{{ $producto->nombre }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Nombre</span>
+                        <span style="font-weight:500; text-align:right; word-break:break-word; max-width:70%">{{ $producto->nombre }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Categoría</span>
-                        <span>{{ $producto->categoria ?? '—' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Categoría</span>
+                        <span style="text-align:right">{{ $producto->categoria ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
-                        <span style="color:var(--color-text-muted)">Proveedor</span>
-                        <span>{{ $producto->proveedor->nombre ?? '—' }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Proveedor</span>
+                        <span style="text-align:right">{{ $producto->proveedor->nombre ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; padding-bottom:4px">
-                        <span style="color:var(--color-text-muted)">Precio de venta</span>
-                        <span style="font-weight:600; color:var(--color-primary)">${{ number_format($producto->precio, 0, ',', '.') }}</span>
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Precio de venta</span>
+                        <span style="font-weight:600; color:var(--color-primary); text-align:right">${{ number_format($producto->precio, 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
@@ -54,14 +54,14 @@
             @endif
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:16px">
-            <div class="card" style="display:flex; flex-direction:row; align-items:center; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+            <div class="card" style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
                 @php
                     $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->generate($producto->id);
                     $qrCodeHighRes = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(400)->generate($producto->id);
                     $qrBase64 = base64_encode($qrCodeHighRes);
                 @endphp
-                <div style="background:white; padding:10px; border-radius:8px; border:1px solid var(--color-border); display:inline-flex;">
+                <div style="background:white; padding:10px; border-radius:8px; border:1px solid var(--color-border); display:inline-flex; flex-shrink:0;">
                     {!! $qrCode !!}
                 </div>
                 <div>
@@ -101,9 +101,9 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Últimas ventas de este producto</div>
-                <div class="table-wrapper" style="border:none; margin:0 -20px">
+                <div class="table-wrapper" style="border:none;">
                     <table class="data-table">
                         <thead>
                             <tr>
