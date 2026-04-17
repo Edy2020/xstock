@@ -191,7 +191,8 @@ svg {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 20px 20px 18px;
+    padding: 0 20px;
+    height: var(--topbar-height);
     border-bottom: 1px solid var(--color-border);
     font-size: 17px;
     font-weight: 700;
@@ -382,6 +383,7 @@ svg {
     border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 20px;
+    min-width: 0;
 }
 
 .card-header {
@@ -706,6 +708,7 @@ table.data-table tbody td {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    min-width: 0;
 }
 
 .grid-3 {
@@ -942,9 +945,12 @@ table.data-table tbody td {
 
     .grid-2,
     .grid-3,
-    .grid-4,
-    .grid-stats {
+    .grid-4 {
         grid-template-columns: 1fr;
+    }
+
+    .grid-stats {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .quick-actions-grid {
@@ -983,6 +989,87 @@ table.data-table tbody td {
     .topbar-title {
         font-size: 14px;
     }
+
+    .dashboard-quick-actions { 
+        display: none !important; 
+    }
+
+    .mobile-fab-container {
+        display: block !important;
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+    }
+
+    .mob-fab-menu {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+        margin-bottom: 12px;
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+    }
+
+    .mob-fab-menu.show {
+        display: flex;
+    }
+
+    .mob-fab-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .mob-fab-label {
+        background: var(--color-surface);
+        color: var(--color-text);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid var(--color-border);
+        white-space: nowrap;
+    }
+
+    .mob-fab-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 6px;
+        background: var(--color-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-border);
+        color: var(--color-text);
+    }
+
+    .mob-fab-icon svg { width: 18px; height: 18px; }
+
+    .mob-fab-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: var(--color-primary);
+        color: white;
+        border: 1px solid var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    #notif-dropdown {
+        position: fixed !important;
+        top: 60px !important;
+        right: 10px !important;
+        left: 10px !important;
+        width: auto !important;
+        max-width: none !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1007,3 +1094,5 @@ table.data-table tbody td {
         padding: 14px;
     }
 }
+
+.mobile-fab-container { display: none; }

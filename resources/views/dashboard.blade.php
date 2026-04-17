@@ -57,8 +57,9 @@
         </div>
     </div>
 
-    <div style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.05em">Acceso Rápido</div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:28px" class="quick-actions-grid">
+    <div class="dashboard-quick-actions">
+        <div style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.05em">Acceso Rápido</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:28px" class="quick-actions-grid">
         <a href="{{ route('productos.create') }}" class="quick-action">
             <div class="qa-icon" style="background:#eff6ff; color:#2563eb">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -102,8 +103,9 @@
             <div class="qa-desc">Gestión de accesos</div>
         </a>
     </div>
+</div>
 
-    <div class="grid-2">
+<div class="grid-2">
 
         <div class="card">
             <div class="card-header">
@@ -192,7 +194,7 @@
 
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; margin-bottom:24px; margin-top:24px">
+    <div class="grid-2" style="gap:24px; align-items:start; margin-bottom:24px; margin-top:24px">
         <div class="card" style="padding:16px;">
             <div id="calendar" style="min-height:400px; font-size:12px"></div>
         </div>
@@ -256,6 +258,27 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- FAB Acciones Móvil -->
+    <div class="mobile-fab-container">
+        <div id="mob-fab-menu" class="mob-fab-menu">
+            <a href="{{ route('productos.create') }}" class="mob-fab-item">
+                <span class="mob-fab-label">Añadir Producto</span>
+                <div class="mob-fab-icon" style="background:#eff6ff; color:#2563eb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            </a>
+            <a href="{{ route('ventas.create') }}" class="mob-fab-item">
+                <span class="mob-fab-label">Nueva Venta</span>
+                <div class="mob-fab-icon" style="background:#f0fdf4; color:#16a34a"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+            </a>
+            <a href="{{ route('proveedores.create') }}" class="mob-fab-item">
+                <span class="mob-fab-label">Añadir Proveedor</span>
+                <div class="mob-fab-icon" style="background:#fef9c3; color:#a16207"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+            </a>
+        </div>
+        <button id="mob-fab-btn" class="mob-fab-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
     </div>
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
@@ -424,6 +447,14 @@
                     document.getElementById('btn-delete-rm').innerText = 'Eliminar Evento';
                 });
             });
+
+            const mobFabBtn = document.getElementById('mob-fab-btn');
+            if(mobFabBtn) {
+                mobFabBtn.addEventListener('click', function() {
+                    document.getElementById('mob-fab-menu').classList.toggle('show');
+                    this.classList.toggle('active');
+                });
+            }
         });
 
         function formatDateForInput(dateObj) {
