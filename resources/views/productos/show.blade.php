@@ -20,9 +20,9 @@
 
         <div style="display:flex; flex-direction:column; gap:16px">
             @if($producto->imagen)
-            <div class="card" style="padding:0; overflow:hidden">
+            <div class="card" style="padding:12px; display:flex; justify-content:center; align-items:center; background: var(--color-bg-alt, var(--color-surface));">
                 <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}"
-                     style="width:100%; max-height:320px; object-fit:cover; display:block">
+                     style="max-width:100%; max-height:450px; object-fit:contain; border-radius:6px; display:block">
             </div>
             @endif
             <div class="card">
