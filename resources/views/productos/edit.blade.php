@@ -90,6 +90,16 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="descuento">Descuento (%)</label>
+                        <div style="position:relative">
+                            <input type="number" id="descuento" name="descuento" class="form-input"
+                                value="{{ old('descuento', $producto->descuento) }}" min="0" max="100" step="1"
+                                style="padding-right:30px">
+                            <span style="position:absolute; right:11px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:13px; pointer-events:none">%</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="stock">Stock <span style="color:var(--color-danger)">*</span></label>
                         <input type="number" id="stock" name="stock" class="form-input"
                             value="{{ old('stock', $producto->stock) }}" min="0" step="1" required>

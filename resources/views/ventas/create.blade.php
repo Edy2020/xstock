@@ -153,7 +153,8 @@
                 'id' => $p->id,
                 'nombre' => $p->nombre,
                 'precio' => $p->precio,
-                'stock' => $p->stock
+                'stock' => $p->stock,
+                'descuento' => $p->descuento
             ];
         })->values()->all();
     @endphp
@@ -313,7 +314,7 @@
                         precio: productoData.precio,
                         stock: productoData.stock,
                         cantidad: 1,
-                        descuento: 0
+                        descuento: productoData.descuento || 0
                     });
                 }
                 

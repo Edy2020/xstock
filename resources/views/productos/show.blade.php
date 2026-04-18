@@ -43,10 +43,16 @@
                         <span style="color:var(--color-text-muted); flex-shrink:0;">Proveedor</span>
                         <span style="text-align:right">{{ $producto->proveedor->nombre ?? '—' }}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; padding-bottom:4px">
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted); flex-shrink:0;">Precio de venta</span>
                         <span style="font-weight:600; color:var(--color-primary); text-align:right">${{ number_format($producto->precio, 0, ',', '.') }}</span>
                     </div>
+                    @if($producto->descuento > 0)
+                    <div style="display:flex; justify-content:space-between; padding-bottom:4px">
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Descuento predefinido</span>
+                        <span style="font-weight:600; color:var(--color-danger); text-align:right">{{ $producto->descuento }}%</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 

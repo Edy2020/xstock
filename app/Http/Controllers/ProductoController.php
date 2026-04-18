@@ -52,6 +52,7 @@ class ProductoController extends Controller
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
+            'descuento' => 'nullable|integer|min:0|max:100',
             'estado' => 'required|in:activo,inactivo',
             'proveedor_nombre' => 'nullable|string|max:255',
         ], [
@@ -64,6 +65,9 @@ class ProductoController extends Controller
             'precio.integer' => 'El precio debe ser un número entero (CLP).',
             'stock.required' => 'El stock es obligatorio.',
             'stock.integer' => 'El stock debe ser un número entero.',
+            'descuento.integer' => 'el descuento debe ser un número entero.',
+            'descuento.min' => 'El descuento no puede ser menor a 0.',
+            'descuento.max' => 'El descuento no puede ser mayor a 100.',
             'estado.required' => 'El estado es obligatorio.',
         ]);
 
@@ -144,6 +148,7 @@ class ProductoController extends Controller
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
+            'descuento' => 'nullable|integer|min:0|max:100',
             'estado' => 'required|in:activo,inactivo',
             'proveedor_nombre' => 'nullable|string|max:255',
         ], [
@@ -262,6 +267,7 @@ class ProductoController extends Controller
                     'proveedor_id' => $proveedor_id,
                     'precio' => is_numeric($row[4] ?? null) ? (int)$row[4] : 0,
                     'stock' => is_numeric($row[5] ?? null) ? (int)$row[5] : 0,
+                    'descuento' => is_numeric($row[7] ?? null) ? (int)$row[7] : 0,
                     'estado' => in_array(strtolower(trim($row[6] ?? '')), ['activo', 'inactivo']) ? strtolower(trim($row[6])) : 'activo',
                 ]);
                 $agregados++;

@@ -29,11 +29,13 @@ class Producto extends Model
         'stock',
         'estado',
         'proveedor_id',
+        'descuento',
     ];
 
     protected $casts = [
         'precio' => 'integer',
         'stock' => 'integer',
+        'descuento' => 'integer',
     ];
 
     public function proveedor()

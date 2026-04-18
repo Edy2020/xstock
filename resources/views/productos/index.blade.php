@@ -120,7 +120,14 @@
                         <td style="font-weight:500">{{ $producto->nombre }}</td>
                         <td>{{ $producto->categoria ?? '—' }}</td>
                         <td style="color:var(--color-text-muted)">{{ $producto->proveedor?->nombre ?? '—' }}</td>
-                        <td>$ {{ number_format($producto->precio, 0, ',', '.') }}</td>
+                        <td>
+                            $ {{ number_format($producto->precio, 0, ',', '.') }}
+                            @if($producto->descuento > 0)
+                                <div style="font-size:11px; color:var(--color-danger); font-weight:600">
+                                    {{ $producto->descuento }}% dto.
+                                </div>
+                            @endif
+                        </td>
                         <td>{{ $producto->stock }}</td>
                         <td><span class="badge {{ $producto->badge_estado }}">{{ $producto->label_estado }}</span></td>
                         <td>
