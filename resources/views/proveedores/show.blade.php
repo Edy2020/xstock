@@ -56,17 +56,6 @@
                 </p>
             </div>
             @endif
-        </div>
-
-        {{-- Logística / Productos --}}
-        <div style="display:flex; flex-direction:column; gap:16px">
-            
-            <div class="grid-2" style="gap:10px">
-                <div class="stat-card" style="padding:14px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px">
-                    <div class="stat-label" style="font-size:12px; color:var(--color-text-muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px">Artículos Suministrados</div>
-                    <div class="stat-value" style="font-size:28px; font-weight:700; margin-top:8px">{{ $productos->count() }}</div>
-                </div>
-            </div>
 
             <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Catálogo Ligado a este Proveedor</div>
@@ -97,6 +86,18 @@
                     </table>
                 </div>
             </div>
+        </div>
+
+        {{-- Logística / Productos --}}
+        <div style="display:flex; flex-direction:column; gap:16px">
+            
+            <div class="grid-2" style="gap:10px">
+                <div class="stat-card" style="padding:14px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px">
+                    <div class="stat-label" style="font-size:12px; color:var(--color-text-muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px">Artículos Suministrados</div>
+                    <div class="stat-value" style="font-size:28px; font-weight:700; margin-top:8px">{{ $productos->count() }}</div>
+                </div>
+            </div>
+
         </div>
 
     </div>

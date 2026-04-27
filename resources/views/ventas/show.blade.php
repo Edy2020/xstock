@@ -95,36 +95,7 @@
                 </p>
             </div>
             @endif
-        </div>
 
-        <div style="display:flex; flex-direction:column; gap:16px">
-            <div class="card">
-                <div class="card-title" style="margin-bottom:12px">Facturación</div>
-                <div style="display:flex; flex-direction:column; gap:10px; font-size:14px; background:var(--color-bg); padding:16px; border-radius:8px">
-                    <div style="display:flex; justify-content:space-between">
-                        <span style="color:var(--color-text-muted)">Subtotal (Neto)</span>
-                        <span style="font-weight:500">${{ number_format(round($venta->subtotal / 1.19), 0, ',', '.') }}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between">
-                        <span style="color:var(--color-text-muted)">IVA (19%)</span>
-                        <span style="font-weight:500">${{ number_format(round($venta->total - ($venta->total / 1.19)), 0, ',', '.') }}</span>
-                    </div>
-                    @if($venta->descuento_total > 0)
-                    <div style="display:flex; justify-content:space-between">
-                        <span style="color:var(--color-text-muted)">Descuentos aplicados</span>
-                        <span style="font-weight:500; color:var(--color-danger)">- ${{ number_format($venta->descuento_total, 0, ',', '.') }}</span>
-                    </div>
-                    @endif
-                    <div style="border-top:1px dashed var(--color-border); margin:4px 0"></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:18px">
-                        <span style="font-weight:600">Total Pagado</span>
-                        <span style="font-weight:700; color:var(--color-success); {{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5; color:var(--color-text-muted);' : '' }}">
-                            ${{ number_format($venta->total, 0, ',', '.') }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            
             <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Productos Facturados</div>
                 <div class="table-wrapper" style="border:none; overflow-y:auto">
@@ -158,6 +129,36 @@
                     </table>
                 </div>
             </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Facturación</div>
+                <div style="display:flex; flex-direction:column; gap:10px; font-size:14px; background:var(--color-bg); padding:16px; border-radius:8px">
+                    <div style="display:flex; justify-content:space-between">
+                        <span style="color:var(--color-text-muted)">Subtotal (Neto)</span>
+                        <span style="font-weight:500">${{ number_format(round($venta->subtotal / 1.19), 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between">
+                        <span style="color:var(--color-text-muted)">IVA (19%)</span>
+                        <span style="font-weight:500">${{ number_format(round($venta->total - ($venta->total / 1.19)), 0, ',', '.') }}</span>
+                    </div>
+                    @if($venta->descuento_total > 0)
+                    <div style="display:flex; justify-content:space-between">
+                        <span style="color:var(--color-text-muted)">Descuentos aplicados</span>
+                        <span style="font-weight:500; color:var(--color-danger)">- ${{ number_format($venta->descuento_total, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    <div style="border-top:1px dashed var(--color-border); margin:4px 0"></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:18px">
+                        <span style="font-weight:600">Total Pagado</span>
+                        <span style="font-weight:700; color:var(--color-success); {{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5; color:var(--color-text-muted);' : '' }}">
+                            ${{ number_format($venta->total, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 

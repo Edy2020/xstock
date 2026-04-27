@@ -19,12 +19,6 @@
     <div class="split-layout">
 
         <div style="display:flex; flex-direction:column; gap:16px">
-            @if($producto->imagen)
-            <div class="card" style="padding:12px; display:flex; justify-content:center; align-items:center; background: var(--color-bg-alt, var(--color-surface));">
-                <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}"
-                     style="max-width:100%; max-height:450px; object-fit:contain; border-radius:6px; display:block">
-            </div>
-            @endif
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">Información general</div>
@@ -64,54 +58,6 @@
                 </p>
             </div>
             @endif
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
-            <div class="card" style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
-                @php
-                    $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->generate($producto->id);
-                    $qrCodeHighRes = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(400)->generate($producto->id);
-                    $qrBase64 = base64_encode($qrCodeHighRes);
-                @endphp
-                <div style="background:white; padding:10px; border-radius:8px; border:1px solid var(--color-border); display:inline-flex; flex-shrink:0;">
-                    {!! $qrCode !!}
-                </div>
-                <div>
-                    <div class="card-title" style="margin-bottom:4px">Código QR</div>
-                    <p style="font-size:12px; color:var(--color-text-muted); margin-bottom:12px;">
-                        Escanea para identificar el producto rápidamente.
-                    </p>
-                    <a href="data:image/svg+xml;base64,{{ $qrBase64 }}" download="qr-producto-{{ $producto->id }}.svg" class="btn btn-secondary" style="font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        Descargar Etiqueta
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title" style="margin-bottom:12px">Inventario</div>
-                <div class="grid-2" style="gap:10px; margin-bottom:14px">
-                    <div class="stat-card" style="padding:14px">
-                        <div class="stat-label">Stock actual</div>
-                        <div class="stat-value" style="font-size:28px">{{ $producto->stock }}</div>
-                    </div>
-                    <div class="stat-card" style="padding:14px; opacity:0.75">
-                        <div class="stat-label">Stock mínimo (Sugerido)</div>
-                        <div class="stat-value" style="font-size:28px; color:var(--color-text-muted)">5</div>
-                    </div>
-                </div>
-                @php
-                    $isRed = $producto->stock <= 5;
-                    $min = 20; // Límite %
-                    $porcentaje = min(($producto->stock / $min) * 100, 100);
-                @endphp
-                <div class="progress-bar-wrap">
-                    <div class="progress-bar-fill" style="width:{{ $porcentaje }}%; background:{{ $isRed ? 'var(--color-danger)' : 'var(--color-success)' }}"></div>
-                </div>
-                <div style="font-size:11.5px; color:var(--color-text-muted); margin-top:6px">
-                    {{ $isRed ? 'Nivel de inventario Crítico o Agotado' : 'Capacidad Óptima' }}
-                </div>
-            </div>
 
             <div class="card" style="min-width:0">
                 <div class="card-title" style="margin-bottom:12px">Últimas ventas de este producto</div>
@@ -138,6 +84,57 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Inventario</div>
+                <div class="grid-2" style="gap:10px; margin-bottom:14px">
+                    <div class="stat-card" style="padding:14px">
+                        <div class="stat-label">Stock actual</div>
+                        <div class="stat-value" style="font-size:28px">{{ $producto->stock }}</div>
+                    </div>
+                    <div class="stat-card" style="padding:14px; opacity:0.75">
+                        <div class="stat-label">Stock mínimo (Sugerido)</div>
+                        <div class="stat-value" style="font-size:28px; color:var(--color-text-muted)">5</div>
+                    </div>
+                </div>
+                @php
+                    $isRed = $producto->stock <= 5;
+                    $min = 20; // Límite %
+                    $porcentaje = min(($producto->stock / $min) * 100, 100);
+                @endphp
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:{{ $porcentaje }}%; background:{{ $isRed ? 'var(--color-danger)' : 'var(--color-success)' }}"></div>
+                </div>
+                <div style="font-size:11.5px; color:var(--color-text-muted); margin-top:6px">
+                    {{ $isRed ? 'Nivel de inventario Crítico o Agotado' : 'Capacidad Óptima' }}
+                </div>
+            </div>
+            @if($producto->imagen)
+            <div class="card" style="padding:12px; display:flex; justify-content:center; align-items:center; background: var(--color-bg-alt, var(--color-surface));">
+                <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}"
+                     style="max-width:100%; max-height:300px; object-fit:contain; border-radius:6px; display:block">
+            </div>
+            @endif
+            <div class="card" style="display:flex; align-items:center; gap:12px; padding:12px;">
+                @php
+                    $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(60)->generate($producto->id);
+                    $qrCodeHighRes = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(400)->generate($producto->id);
+                    $qrBase64 = base64_encode($qrCodeHighRes);
+                @endphp
+                <div style="background:white; padding:6px; border-radius:6px; border:1px solid var(--color-border); display:inline-flex; flex-shrink:0;">
+                    {!! $qrCode !!}
+                </div>
+                <div style="flex:1">
+                    <div style="font-size:11px; color:var(--color-text-muted); font-weight:600; margin-bottom:2px">Código de Identificación</div>
+                    <div style="font-size:10px; color:var(--color-text-muted); margin-bottom:8px; line-height:1.2">Escanea para acceder desde dispositivos móviles.</div>
+                    <a href="data:image/svg+xml;base64,{{ $qrBase64 }}" download="qr-producto-{{ $producto->id }}.svg" class="btn btn-secondary btn-sm" style="width:100%; justify-content:center; gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Descargar Etiqueta
+                    </a>
                 </div>
             </div>
         </div>
