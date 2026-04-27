@@ -38,8 +38,22 @@
                         <span style="text-align:right">{{ $producto->proveedor->nombre ?? '—' }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Precio de compra</span>
+                        <span style="font-weight:600; color:var(--color-text-muted); text-align:right">${{ number_format($producto->precio_compra, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted); flex-shrink:0;">Precio de venta</span>
                         <span style="font-weight:600; color:var(--color-primary); text-align:right">${{ number_format($producto->precio, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                        <span style="color:var(--color-text-muted); flex-shrink:0;">Margen de ganancia</span>
+                        @php
+                            $ganancia = $producto->precio - $producto->precio_compra;
+                            $margenPct = $producto->precio > 0 ? ($ganancia / $producto->precio) * 100 : 0;
+                        @endphp
+                        <span style="font-weight:600; color:{{ $ganancia >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}; text-align:right">
+                            ${{ number_format($ganancia, 0, ',', '.') }} ({{ number_format($margenPct, 1) }}%)
+                        </span>
                     </div>
                     @if($producto->descuento > 0)
                     <div style="display:flex; justify-content:space-between; padding-bottom:4px">
@@ -67,24 +81,107 @@
                             <tr>
                                 <th># Venta</th>
                                 <th>Fecha</th>
-                                <th>Cant. Vendida</th>
+                                <th>Cant.</th>
+                                <th>Desc.</th>
                                 <th>Total Parcial</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($ultimasVentas as $detalle)
-                            <tr>
+                            <tr onclick="window.location.href='{{ route('ventas.show', $detalle->venta_id) }}'" style="cursor:pointer" class="hover-row">
                                 <td style="font-family:monospace; font-size:12px; color:var(--color-text-muted)">#{{ str_pad($detalle->venta_id, 5, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $detalle->created_at->format('d/m/Y') }}</td>
                                 <td>{{ $detalle->cantidad }}</td>
-                                <td>${{ number_format($detalle->precio_unitario * $detalle->cantidad, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($detalle->descuento_porcentaje > 0)
+                                        <span style="color:var(--color-danger); font-weight:600">{{ $detalle->descuento_porcentaje }}%</span>
+                                    @else
+                                        <span style="color:var(--color-text-muted)">0%</span>
+                                    @endif
+                                </td>
+                                <td style="font-weight:500">${{ number_format($detalle->subtotal, 0, ',', '.') }}</td>
                             </tr>
                             @empty
-                            <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--color-text-muted)">No hay ventas registradas</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--color-text-muted)">No hay ventas registradas</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Historial de Precios de Compra</div>
+                @if($historialGastos->count() > 0)
+                    <div style="height: 220px; width: 100%; margin-top:10px">
+                        <canvas id="compraChart"></canvas>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const ctx = document.getElementById('compraChart').getContext('2d');
+                            const rawData = @json($historialGastos);
+                            const data = [...rawData].reverse();
+                            
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: data.map(g => {
+                                        const d = new Date(g.created_at);
+                                        return d.getDate() + '/' + (d.getMonth() + 1);
+                                    }),
+                                    datasets: [{
+                                        label: 'Precio Compra',
+                                        data: data.map(g => g.precio_compra),
+                                        borderColor: '#3b82f6',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        borderWidth: 2,
+                                        tension: 0.3,
+                                        fill: true,
+                                        pointBackgroundColor: '#3b82f6',
+                                        pointRadius: 4,
+                                        pointHoverRadius: 6
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { display: false },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            callbacks: {
+                                                label: function(context) {
+                                                    const g = data[context.dataIndex];
+                                                    let label = ' Precio: $' + context.parsed.y.toLocaleString('es-CL');
+                                                    if (g.proveedor) label += ' (' + g.proveedor.nombre + ')';
+                                                    return label;
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: false,
+                                            grid: { color: 'rgba(0,0,0,0.05)' },
+                                            ticks: {
+                                                callback: function(value) { return '$' + value.toLocaleString('es-CL'); },
+                                                font: { size: 11 },
+                                                maxTicksLimit: 5
+                                            }
+                                        },
+                                        x: {
+                                            grid: { display: false },
+                                            ticks: { font: { size: 11 } }
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                @else
+                    <div style="text-align:center; padding:20px; color:var(--color-text-muted); font-size:12px">No hay historial de compras registrado.</div>
+                @endif
             </div>
         </div>
 
@@ -119,6 +216,7 @@
                      style="max-width:100%; max-height:300px; object-fit:contain; border-radius:6px; display:block">
             </div>
             @endif
+
             <div class="card" style="display:flex; align-items:center; gap:12px; padding:12px;">
                 @php
                     $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(60)->generate($producto->id);
@@ -141,4 +239,12 @@
 
     </div>
 
+    <style>
+        .hover-row:hover {
+            background-color: rgba(0, 0, 0, 0.02) !important;
+        }
+        [data-theme="dark"] .hover-row:hover {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+    </style>
 </x-app-layout>

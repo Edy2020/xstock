@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\LogActividad;
+use App\Models\Gasto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -51,6 +52,7 @@ class ProductoController extends Controller
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
+            'precio_compra' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'descuento' => 'nullable|integer|min:0|max:100',
             'estado' => 'required|in:activo,inactivo',
@@ -90,6 +92,16 @@ class ProductoController extends Controller
 
         $producto = Producto::create($data);
 
+        if ($producto->stock > 0) {
+            Gasto::create([
+                'producto_id' => $producto->id,
+                'proveedor_id' => $producto->proveedor_id,
+                'cantidad' => $producto->stock,
+                'precio_compra' => $producto->precio_compra,
+                'total' => $producto->stock * $producto->precio_compra,
+            ]);
+        }
+
         LogActividad::create([
             'user_id' => auth()->id(),
             'accion' => 'Creación',
@@ -119,7 +131,9 @@ class ProductoController extends Controller
             ->take(5)
             ->get();
 
-        return view('productos.show', compact('producto', 'ultimasVentas'));
+        $historialGastos = $producto->gastos()->with('proveedor')->latest()->get();
+
+        return view('productos.show', compact('producto', 'ultimasVentas', 'historialGastos'));
     }
 
     public function edit(Producto $producto)
@@ -147,6 +161,7 @@ class ProductoController extends Controller
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categoria' => 'nullable|string|max:100',
             'precio' => 'required|integer|min:0',
+            'precio_compra' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'descuento' => 'nullable|integer|min:0|max:100',
             'estado' => 'required|in:activo,inactivo',
@@ -185,7 +200,18 @@ class ProductoController extends Controller
             $data['imagen'] = null;
         }
 
+        $viejo_stock = $producto->stock;
         $producto->update($data);
+
+        if ($producto->stock > $viejo_stock) {
+            Gasto::create([
+                'producto_id' => $producto->id,
+                'proveedor_id' => $producto->proveedor_id,
+                'cantidad' => $producto->stock - $viejo_stock,
+                'precio_compra' => $producto->precio_compra,
+                'total' => ($producto->stock - $viejo_stock) * $producto->precio_compra,
+            ]);
+        }
 
         LogActividad::create([
             'user_id' => auth()->id(),

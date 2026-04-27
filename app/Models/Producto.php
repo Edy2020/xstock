@@ -30,17 +30,24 @@ class Producto extends Model
         'estado',
         'proveedor_id',
         'descuento',
+        'precio_compra',
     ];
 
     protected $casts = [
         'precio' => 'integer',
         'stock' => 'integer',
         'descuento' => 'integer',
+        'precio_compra' => 'integer',
     ];
 
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class , 'proveedor_id');
+    }
+
+    public function gastos()
+    {
+        return $this->hasMany(Gasto::class);
     }
 
     public function scopeActivos($query)

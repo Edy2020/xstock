@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\DetalleVenta;
+use App\Models\Gasto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -22,11 +23,20 @@ class EstadisticaController extends Controller
         ];
 
         foreach ($timeframes as $key => $startDate) {
+            $ingresos = Venta::where('created_at', '>=', $startDate)->sum('total');
+            $gastos = Gasto::where('created_at', '>=', $startDate)->sum('total');
+            $balance = $ingresos - $gastos;
+
             $periodData[$key] = [
                 'ventas' => number_format(Venta::where('created_at', '>=', $startDate)->count(), 0, ',', '.'),
-                'ingresos' => '$' . number_format(Venta::where('created_at', '>=', $startDate)->sum('total'), 0, ',', '.'),
+                'ingresos' => '$' . number_format($ingresos, 0, ',', '.'),
+                'gastos' => '$' . number_format($gastos, 0, ',', '.'),
+                'balance' => '$' . number_format($balance, 0, ',', '.'),
+                'balance_raw' => $balance,
                 'labelVentas' => 'Total ventas (' . $key . ')',
-                'labelIngresos' => 'Ingresos (' . $key . ')'
+                'labelIngresos' => 'Ingresos (' . $key . ')',
+                'labelGastos' => 'Gastos (' . $key . ')',
+                'labelBalance' => 'Balance (' . $key . ')'
             ];
         }
 
@@ -42,10 +52,13 @@ class EstadisticaController extends Controller
             $date = $inicioSemana->copy()->addDays($i);
             $ventas = Venta::whereDate('created_at', $date)->count();
             $ingresos = Venta::whereDate('created_at', $date)->sum('total');
+            $gastos = Gasto::whereDate('created_at', $date)->sum('total');
             $diasData->push([
                 'dia' => ucfirst($date->locale('es')->translatedFormat('l')) . ($date->isToday() ? ' (Hoy)' : ''),
                 'ventas' => $ventas,
                 'ing' => '$' . number_format($ingresos, 0, ',', '.'),
+                'gas' => '$' . number_format($gastos, 0, ',', '.'),
+                'gas_raw' => $gastos,
                 'is_today' => $date->isToday(),
             ]);
         }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\Proveedor;
+use App\Models\Gasto;
 
 class DashboardController extends Controller
 {
@@ -37,8 +38,10 @@ class DashboardController extends Controller
             ->take(7)
             ->get();
 
-        $totalProveedores = Proveedor::count();
-        $proveedoresActivos = Proveedor::where('estado', 'activo')->count();
+        $totalGastos = Gasto::sum('total');
+        $gastosMes = Gasto::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('total');
 
         $ultimasVentas = Venta::with('detalles')->latest()->take(5)->get();
 
@@ -46,7 +49,7 @@ class DashboardController extends Controller
             'totalProductos', 'productosMes',
             'ventasHoy', 'porcentajeVentas',
             'countStockCritico', 'productosStockCritico', 'umbralCritico',
-            'totalProveedores', 'proveedoresActivos',
+            'totalGastos', 'gastosMes',
             'ultimasVentas'
         ));
     }

@@ -79,14 +79,31 @@
                         </datalist>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="precio">Precio (CLP) <span style="color:var(--color-danger)">*</span></label>
-                        <div style="position:relative">
-                            <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:13px; pointer-events:none">$</span>
-                            <input type="number" id="precio" name="precio" class="form-input"
-                                value="{{ old('precio', $producto->precio) }}" min="0" step="1"
-                                style="padding-left:22px" required>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+                        <div class="form-group">
+                            <label class="form-label" for="precio_compra">Precio Compra (CLP) <span style="color:var(--color-danger)">*</span></label>
+                            <div style="position:relative">
+                                <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:13px; pointer-events:none">$</span>
+                                <input type="number" id="precio_compra" name="precio_compra" class="form-input"
+                                    value="{{ old('precio_compra', $producto->precio_compra) }}" min="0" step="1"
+                                    style="padding-left:22px" required>
+                            </div>
                         </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="precio">Precio Venta (CLP) <span style="color:var(--color-danger)">*</span></label>
+                            <div style="position:relative">
+                                <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:13px; pointer-events:none">$</span>
+                                <input type="number" id="precio" name="precio" class="form-input"
+                                    value="{{ old('precio', $producto->precio) }}" min="0" step="1"
+                                    style="padding-left:22px" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="margen-container" style="background:var(--color-bg); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px; border:1px solid var(--color-border); margin-top:-4px">
+                        <span style="color:var(--color-text-muted)">Margen de Ganancia Estimado:</span>
+                        <span id="margen-valor" style="font-weight:700; color:var(--color-success)">$0 (0%)</span>
                     </div>
 
                     <div class="form-group">
@@ -208,5 +225,32 @@
                 showPreview(e.dataTransfer.files[0]);
             }
         });
+
+        // Cálculo de margen
+        const precioCompraInput = document.getElementById('precio_compra');
+        const precioVentaInput = document.getElementById('precio');
+        const margenValor = document.getElementById('margen-valor');
+
+        function calcularMargen() {
+            const compra = parseFloat(precioCompraInput.value) || 0;
+            const venta = parseFloat(precioVentaInput.value) || 0;
+            
+            const ganancia = venta - compra;
+            const porcentaje = venta > 0 ? ((ganancia / venta) * 100).toFixed(1) : 0;
+            
+            margenValor.textContent = `$${ganancia.toLocaleString('es-CL')} (${porcentaje}%)`;
+            
+            if (ganancia < 0) {
+                margenValor.style.color = 'var(--color-danger)';
+            } else if (ganancia > 0) {
+                margenValor.style.color = 'var(--color-success)';
+            } else {
+                margenValor.style.color = 'var(--color-text-muted)';
+            }
+        }
+
+        precioCompraInput.addEventListener('input', calcularMargen);
+        precioVentaInput.addEventListener('input', calcularMargen);
+        calcularMargen();
     });
 </script>
