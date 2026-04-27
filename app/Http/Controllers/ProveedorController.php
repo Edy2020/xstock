@@ -50,7 +50,11 @@ class ProveedorController extends Controller
     public function show(Proveedor $proveedor)
     {
         $productos = $proveedor->productos()->latest()->get();
-        return view('proveedores.show', compact('proveedor', 'productos'));
+        
+        // Calcular gasto total histórico (Todas las compras registradas a este proveedor)
+        $gastoTotal = $proveedor->gastos()->sum('total');
+
+        return view('proveedores.show', compact('proveedor', 'productos', 'gastoTotal'));
     }
 
     public function edit(Proveedor $proveedor)

@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Editar Rol'">
 
-    <div class="page-header">
+    <div class="page-header" style="max-width:560px; margin: 0 auto 20px auto; padding: 0;">
         <div class="page-header-left">
             <h1>Editar Rol: {{ $role->nombre }}</h1>
             <p>Modifica los datos básicos del rol</p>
@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <div style="max-width:560px">
+    <div style="max-width:560px; margin: 0 auto;">
         <div class="card">
             <form method="POST" action="{{ route('roles.update', $role) }}">
                 @csrf

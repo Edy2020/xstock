@@ -109,51 +109,66 @@
     </div>
     @endif
 
-    <dialog id="userModal" style="padding:0; border:none; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:450px; width:100%;">
+    <dialog id="userModal" style="padding:0; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); color:var(--color-text); box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); max-width:450px; width:100%; overflow:hidden" class="modal-dialog">
         <form method="POST" id="userForm" style="display:flex; flex-direction:column; margin:0;">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">
-            <div style="padding:20px; border-bottom:1px solid #eee;">
-                <h3 style="margin:0; font-size:16px;" id="modalTitle">Nuevo Usuario</h3>
+            <div style="padding:18px 24px; border-bottom:1px solid var(--color-border); background:rgba(255,255,255,0.02)">
+                <h3 style="margin:0; font-size:16px; font-weight:700" id="modalTitle">Nuevo Usuario</h3>
             </div>
-            <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-                <div>
-                    <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block">Nombre <span style="color:red">*</span></label>
-                    <input type="text" name="name" id="userName" class="form-input" required>
+            <div style="padding:24px; display:flex; flex-direction:column; gap:18px;">
+                <div class="form-group">
+                    <label class="form-label" style="margin-bottom:6px">Nombre <span style="color:var(--color-danger)">*</span></label>
+                    <input type="text" name="name" id="userName" class="form-input" placeholder="Nombre del usuario" required>
                 </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block">Email <span style="color:red">*</span></label>
-                    <input type="email" name="email" id="userEmail" class="form-input" required>
+                <div class="form-group">
+                    <label class="form-label" style="margin-bottom:6px">Email <span style="color:var(--color-danger)">*</span></label>
+                    <input type="email" name="email" id="userEmail" class="form-input" placeholder="email@ejemplo.com" required>
                 </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block">Contraseña <span id="passReq" style="color:red">*</span></label>
-                    <input type="password" name="password" id="userPass" class="form-input" required autocomplete="new-password">
-                    <small style="color:gray; font-size:11px; display:none" id="passHint">Déjalo en blanco para mantener la actual.</small>
+                <div class="form-group">
+                    <label class="form-label" style="margin-bottom:6px">Contraseña <span id="passReq" style="color:var(--color-danger)">*</span></label>
+                    <input type="password" name="password" id="userPass" class="form-input" required autocomplete="new-password" placeholder="••••••••">
+                    <small style="color:var(--color-text-muted); font-size:11px; display:none; margin-top:4px" id="passHint">Déjalo en blanco para mantener la actual.</small>
                 </div>
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1">
-                        <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block">Rol <span style="color:red">*</span></label>
-                        <select name="role_id" id="userRole" class="form-select" required>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label" style="margin-bottom:6px">Rol <span style="color:var(--color-danger)">*</span></label>
+                        <select name="role_id" id="userRole" class="form-select" required style="width:100%">
+                            <option value="" disabled selected>Seleccionar...</option>
                             @foreach($roles as $r)
                                 <option value="{{ $r->id }}">{{ $r->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div style="flex:1">
-                        <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block">Estado <span style="color:red">*</span></label>
-                        <select name="estado" id="userEstado" class="form-select" required>
+                    <div class="form-group">
+                        <label class="form-label" style="margin-bottom:6px">Estado <span style="color:var(--color-danger)">*</span></label>
+                        <select name="estado" id="userEstado" class="form-select" required style="width:100%">
                             <option value="activo">Activo</option>
                             <option value="inactivo">Inactivo</option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div style="padding:16px 20px; border-top:1px solid #eee; display:flex; justify-content:flex-end; gap:10px; background:#fafafa;">
+            <div style="padding:16px 24px; border-top:1px solid var(--color-border); display:flex; justify-content:flex-end; gap:12px; background:rgba(255,255,255,0.01)">
                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('userModal').close()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="submit" class="btn btn-primary">Guardar Usuario</button>
             </div>
         </form>
     </dialog>
+
+    <style>
+        .modal-dialog::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .modal-dialog {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 
     <script>
         function openCreateUser() {

@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Nuevo Proveedor'">
 
-    <div class="page-header">
+    <div class="page-header" style="max-width:560px; margin: 0 auto 20px auto; padding: 0;">
         <div class="page-header-left">
             <h1>Nuevo Proveedor</h1>
             <p>Registra un nuevo proveedor en el sistema</p>
@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <div style="max-width:560px">
+    <div style="max-width:560px; margin: 0 auto;">
         <div class="card">
             <form method="POST" action="{{ route('proveedores.store') }}">
                 @csrf

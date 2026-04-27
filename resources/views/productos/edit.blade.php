@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Editar Producto'">
 
-    <div class="page-header">
+    <div class="page-header" style="max-width:560px; margin: 0 auto 20px auto; padding: 0;">
         <div class="page-header-left">
             <h1>Editar Producto</h1>
             <p>{{ $producto->nombre }}</p>
@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <div style="max-width:560px">
+    <div style="max-width:560px; margin: 0 auto;">
         <div class="card">
             <form method="POST" action="{{ route('productos.update', $producto) }}" id="form-update" enctype="multipart/form-data">
                 @csrf @method('PUT')

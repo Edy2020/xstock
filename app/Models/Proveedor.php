@@ -27,6 +27,11 @@ class Proveedor extends Model
         return $this->hasMany(Producto::class , 'proveedor_id');
     }
 
+    public function gastos()
+    {
+        return $this->hasMany(Gasto::class, 'proveedor_id');
+    }
+
     public function getBadgeEstadoAttribute(): string
     {
         return $this->estado === 'activo' ? 'badge-green' : 'badge-gray';

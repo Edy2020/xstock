@@ -91,10 +91,16 @@
         {{-- Logística / Productos --}}
         <div style="display:flex; flex-direction:column; gap:16px">
             
-            <div class="grid-2" style="gap:10px">
-                <div class="stat-card" style="padding:14px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px">
-                    <div class="stat-label" style="font-size:12px; color:var(--color-text-muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px">Artículos Suministrados</div>
-                    <div class="stat-value" style="font-size:28px; font-weight:700; margin-top:8px">{{ $productos->count() }}</div>
+            <div style="display:flex; flex-direction:column; gap:10px">
+                <div class="stat-card" style="padding:16px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:12px; transition: transform 0.2s ease" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="stat-label" style="font-size:11px; color:var(--color-text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.8px">Artículos Suministrados</div>
+                    <div class="stat-value" style="font-size:26px; font-weight:800; margin-top:10px; color:var(--color-primary)">{{ $productos->count() }}</div>
+                </div>
+
+                <div class="stat-card" style="padding:16px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:12px; border-left: 4px solid var(--color-success); transition: transform 0.2s ease" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="stat-label" style="font-size:11px; color:var(--color-text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.8px">Gasto Histórico</div>
+                    <div class="stat-value" style="font-size:26px; font-weight:800; margin-top:10px; color:var(--color-success)">${{ number_format($gastoTotal, 0, ',', '.') }}</div>
+                    <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px">Total acumulado en compras</div>
                 </div>
             </div>
 

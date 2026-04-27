@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Permisos de ' . $role->nombre">
 
-    <div class="page-header">
+    <div class="page-header" style="max-width:560px; margin: 0 auto 20px auto; padding: 0;">
         <div class="page-header-left">
             <h1>Permisos del Rol: {{ $role->nombre }}</h1>
             <p>Configura específicamente a qué módulos y acciones tiene acceso este rol.</p>
@@ -23,7 +23,8 @@
         </div>
     @endif
 
-    <div class="card" style="max-width: 600px;">
+    <div style="max-width:560px; margin: 0 auto;">
+        <div class="card">
         <div class="card-header">
             <div class="card-title">Detalles y Permisos</div>
             <div class="card-subtitle">
@@ -97,7 +98,7 @@
                 </table>
             </div>
 
-            <div style="padding:16px 20px; display:flex; justify-content:flex-end; border-top:1px solid #eee">
+            <div style="padding:16px 20px; display:flex; justify-content:flex-end; border-top:1px solid var(--color-border)">
                 <button type="submit" class="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     Actualizar Rol

@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Editar Proveedor'">
 
-    <div class="page-header">
+    <div class="page-header" style="max-width:560px; margin: 0 auto 20px auto; padding: 0;">
         <div class="page-header-left">
             <h1>Editar Proveedor</h1>
             <p>{{ $proveedor->nombre }}</p>
@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <div style="max-width:560px">
+    <div style="max-width:560px; margin: 0 auto;">
         <div class="card">
             <form method="POST" action="{{ route('proveedores.update', $proveedor) }}" id="form-update">
                 @csrf @method('PUT')
