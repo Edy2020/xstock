@@ -69,6 +69,15 @@
                 <div style="font-size:22px; font-weight:700">${{ number_format($ingresosHoy ?? 0, 0, ',', '.') }}</div>
             </div>
         </div>
+        <div class="card" style="padding:16px; display:flex; gap:14px; align-items:center">
+            <div style="width:48px; height:48px; border-radius:12px; background:rgba(245,158,11,0.1); color:#f59e0b; display:flex; align-items:center; justify-content:center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12.5px; color:var(--color-text-muted); font-weight:500; margin-bottom:2px">Pedidos Pendientes</div>
+                <div style="font-size:22px; font-weight:700; color:{{ $pedidosPendientes > 0 ? '#f59e0b' : 'inherit' }}">{{ $pedidosPendientes ?? 0 }}</div>
+            </div>
+        </div>
     </div>
 
     {{-- Filtro Client-side --}}
@@ -104,9 +113,10 @@
                         <th style="width:100px">ID Venta</th>
                         <th>Fecha y Hora</th>
                         <th>Vendedor</th>
-                        <th>Método Pago</th>
+                        <th>Origen</th>
+                        <th>Estado</th>
+                        <th>Pago</th>
                         <th>Items</th>
-                        <th>Descuento</th>
                         <th>Total</th>
                         <th>Acciones</th>
                     </tr>
@@ -121,16 +131,21 @@
                             {{ $venta->created_at->format('d/m/Y') }} 
                             <span style="color:var(--color-text-muted); font-size:12.5px">{{ $venta->created_at->format('H:i') }}</span>
                         </td>
-                        <td style="font-size:12.5px">{{ $venta->vendedor->name ?? '—' }}</td>
+                        <td style="font-size:12.5px">{{ $venta->vendedor->name ?? 'Sistema' }}</td>
+                        <td>
+                            @if($venta->origen === 'online')
+                                <span class="badge" style="background:rgba(99,102,241,0.1); color:#818cf8; border:1px solid rgba(99,102,241,0.2); font-size:10px">XStore (Web)</span>
+                            @else
+                                <span class="badge" style="background:rgba(107,114,128,0.1); color:#9ca3af; border:1px solid rgba(107,114,128,0.2); font-size:10px">Tienda Local</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge {{ $venta->badge_estado }}">{{ $venta->label_estado }}</span>
+                        </td>
                         <td>
                             <span class="badge badge-gray" style="text-transform:capitalize">{{ $venta->metodo_pago }}</span>
                         </td>
-                        <td>{{ $venta->detalles->sum('cantidad') }} productos</td>
-                        <td style="color:var(--color-danger)">
-                            <span style="{{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5;' : '' }}">
-                                {{ $venta->descuento_total > 0 ? '- $'.number_format($venta->descuento_total, 0, ',', '.') : '—' }}
-                            </span>
-                        </td>
+                        <td>{{ $venta->detalles->sum('cantidad') }}</td>
                         <td style="font-weight:700; color: {{ $venta->estado === 'anulada' ? 'var(--color-text-muted)' : 'inherit' }}">
                             <span style="{{ $venta->estado === 'anulada' ? 'text-decoration:line-through; opacity:0.5;' : '' }}">
                                 ${{ number_format($venta->total, 0, ',', '.') }}
@@ -138,19 +153,25 @@
                         </td>
                         <td>
                             <div style="display:flex; gap:6px">
+                                @if($venta->estado === 'preparacion' && auth()->user()->hasPermission('ventas.crear'))
+                                    <form method="POST" action="{{ route('ventas.confirmar', $venta->id) }}">
+                                        @csrf
+                                        <button class="btn btn-success btn-sm" style="font-size:11px">Confirmar</button>
+                                    </form>
+                                @endif
                                 @if(auth()->user()->hasPermission('ventas.anular'))
-                                    @if($venta->estado === 'completada')
+                                    @if($venta->estado === 'completada' || $venta->estado === 'preparacion')
                                         <form method="POST" action="{{ route('ventas.anular', $venta->id) }}"
                                               onsubmit="return confirm('¿Anular esta venta y reponer el stock correspondiente?')">
                                             @csrf
-                                            <button class="btn btn-warning btn-sm" style="color:white; background-color: #f59e0b; border-color: #f59e0b;">Anular</button>
+                                            <button class="btn btn-warning btn-sm" style="color:white; background-color: #f59e0b; border-color: #f59e0b; font-size:11px">Anular</button>
                                         </form>
-                                    @else
+                                    @elseif($venta->estado === 'anulada')
                                         <span class="badge" style="background:#fee2e2; color:#ef4444; padding: 4px 8px; font-size:11px; margin-right:4px;">Anulada</span>
                                         <form method="POST" action="{{ route('ventas.destroy', $venta->id) }}"
                                               onsubmit="return confirm('¿Eliminar esta venta permanentemente del registro?')">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-danger btn-sm">Eliminar</button>
+                                            <button class="btn btn-danger btn-sm" style="font-size:11px">Eliminar</button>
                                         </form>
                                     @endif
                                 @else

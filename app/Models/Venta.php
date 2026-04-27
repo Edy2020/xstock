@@ -17,9 +17,30 @@ class Venta extends Model
         'descuento_total',
         'total',
         'metodo_pago',
+        'origen',
         'notas',
         'estado',
     ];
+
+    public function getBadgeEstadoAttribute()
+    {
+        return match($this->estado) {
+            'completada'  => 'badge-green',
+            'preparacion' => 'badge-yellow',
+            'anulada'     => 'badge-red',
+            default       => 'badge-gray'
+        };
+    }
+
+    public function getLabelEstadoAttribute()
+    {
+        return match($this->estado) {
+            'completada'  => 'Completada',
+            'preparacion' => 'En Preparación',
+            'anulada'     => 'Anulada',
+            default       => ucfirst($this->estado)
+        };
+    }
 
     protected $casts = [
         'subtotal' => 'integer',

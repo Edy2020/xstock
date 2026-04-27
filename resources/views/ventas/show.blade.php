@@ -6,6 +6,15 @@
             <p>Emitida el {{ $venta->created_at->format('d/m/Y \a \l\a\s H:i') }}</p>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap">
+            @if($venta->estado === 'preparacion' && auth()->user()->hasPermission('ventas.crear'))
+            <form method="POST" action="{{ route('ventas.confirmar', $venta->id) }}">
+                @csrf
+                <button class="btn btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Confirmar Pedido
+                </button>
+            </form>
+            @endif
             <button class="btn btn-primary" onclick="window.print()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 Imprimir Recibo
@@ -61,12 +70,18 @@
                         <span style="font-weight:600; font-family:monospace; text-align:right; word-break:break-word;">#{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
+                        <span style="color:var(--color-text-muted); flex-shrink:0">Origen de Venta</span>
+                        <span style="font-weight:600; text-align:right">
+                            @if($venta->origen === 'online')
+                                <span style="color:#0369a1">XStore (Tienda Online)</span>
+                            @else
+                                <span style="color:var(--color-text-muted)">Venta Local (XStock)</span>
+                            @endif
+                        </span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted); flex-shrink:0">Estado</span>
-                        @if($venta->estado === 'completada')
-                            <span class="badge" style="background:#dcfce7; color:#166534; padding: 4px 8px; font-size:11px;">Completada</span>
-                        @else
-                            <span class="badge" style="background:#fee2e2; color:#ef4444; padding: 4px 8px; font-size:11px;">Anulada</span>
-                        @endif
+                        <span class="badge {{ $venta->badge_estado }}">{{ $venta->label_estado }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:10px">
                         <span style="color:var(--color-text-muted); flex-shrink:0">Fecha y Hora</span>

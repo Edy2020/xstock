@@ -18,8 +18,9 @@ class VentaController extends Controller
         
         $totalVentas = Venta::count();
         $ingresosHoy = Venta::whereDate('created_at', now()->toDateString())->sum('total');
+        $pedidosPendientes = Venta::where('estado', 'preparacion')->count();
 
-        return view('ventas.index', compact('ventas', 'totalVentas', 'ingresosHoy'));
+        return view('ventas.index', compact('ventas', 'totalVentas', 'ingresosHoy', 'pedidosPendientes'));
     }
 
     public function create()
@@ -64,7 +65,9 @@ class VentaController extends Controller
                 'descuento_total' => 0,
                 'total'           => 0,
                 'metodo_pago'     => $request->metodo_pago,
+                'origen'          => 'local',
                 'notas'           => $request->notas,
+                'estado'          => 'completada',
             ]);
 
             foreach ($productosJson as $item) {
@@ -143,6 +146,36 @@ class VentaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al procesar la venta: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    public function confirmar(Venta $venta)
+    {
+        abort_unless(auth()->user()->hasPermission('ventas.crear'), 403, 'No tienes permiso para confirmar ventas.');
+
+        if ($venta->estado !== 'preparacion') {
+            return back()->withErrors(['error' => 'Solo se pueden confirmar ventas en preparación.']);
+        }
+
+        try {
+            DB::beginTransaction();
+            
+            $venta->update(['estado' => 'completada']);
+
+            LogActividad::create([
+                'user_id' => auth()->id(),
+                'accion' => 'Confirmación',
+                'modulo' => 'Ventas',
+                'detalle' => 'Confirmó pedido online #' . str_pad($venta->id, 5, '0', STR_PAD_LEFT),
+                'ip_address' => request()->ip(),
+            ]);
+            
+            DB::commit();
+            
+            return back()->with('success', 'Pedido confirmado y marcado como completado.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al confirmar la venta: ' . $e->getMessage()]);
         }
     }
 
