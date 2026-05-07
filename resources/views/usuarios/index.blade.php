@@ -159,7 +159,6 @@
     <style>
         .modal-dialog::backdrop {
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
         }
         .modal-dialog {
             animation: modalFadeIn 0.3s ease-out;

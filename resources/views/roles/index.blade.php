@@ -56,9 +56,9 @@
     <div class="grid-3" style="margin-bottom:28px">
         @php
             $colors = [
-                1 => ['color'=>'#2563eb', 'bg'=>'#eff6ff'], // Admin
-                2 => ['color'=>'#16a34a', 'bg'=>'#f0fdf4'], // Vendedor
-                3 => ['color'=>'#d97706', 'bg'=>'#fffbeb'], // Almacén
+                1 => ['color'=>'#2563eb', 'bg'=>'#eff6ff'],
+                2 => ['color'=>'#16a34a', 'bg'=>'#f0fdf4'],
+                3 => ['color'=>'#d97706', 'bg'=>'#fffbeb'],
             ];
         @endphp
         @foreach($roles as $r)
@@ -104,9 +104,9 @@
         transition: background-color 0.2s ease;
     }
     .role-card-hover:hover {
-        background-color: #f8fafc; /* Color en modo claro */
+        background-color: #f8fafc;
     }
     [data-theme="dark"] .role-card-hover:hover {
-        background-color: #272f3d; /* Color en modo oscuro */
+        background-color: #272f3d;
     }
 </style>

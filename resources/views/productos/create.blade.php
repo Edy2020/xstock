@@ -203,7 +203,6 @@
                 }
             });
 
-            // Cálculo de margen
             const precioCompraInput = document.getElementById('precio_compra');
             const precioVentaInput = document.getElementById('precio');
             const margenValor = document.getElementById('margen-valor');

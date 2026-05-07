@@ -80,13 +80,30 @@
         </div>
     </div>
 
-    {{-- Filtro Client-side --}}
     @if($ventas->isNotEmpty())
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap" class="filters-row">
         <div class="search-bar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="filter-search" placeholder="Buscar por ID o método de pago...">
+            <input type="text" id="filter-search" placeholder="Buscar por ID...">
         </div>
+        <select id="filter-origen" class="form-select" style="width:160px; height:34px; font-size:13px; padding:4px 10px">
+            <option value="">Todos los orígenes</option>
+            <option value="local">Tienda Local</option>
+            <option value="online">XStore (Web)</option>
+        </select>
+        <select id="filter-estado" class="form-select" style="width:160px; height:34px; font-size:13px; padding:4px 10px">
+            <option value="">Cualquier estado</option>
+            <option value="completada">Completada</option>
+            <option value="preparacion">En Preparación</option>
+            <option value="anulada">Anulada</option>
+        </select>
+        <select id="filter-pago" class="form-select" style="width:160px; height:34px; font-size:13px; padding:4px 10px">
+            <option value="">Cualquier pago</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="credito">Crédito</option>
+        </select>
         <button id="btn-limpiar" class="btn btn-secondary btn-sm" style="display:none">Limpiar</button>
     </div>
     @endif
@@ -123,7 +140,7 @@
                 </thead>
                 <tbody id="ventas-tbody">
                     @foreach($ventas as $venta)
-                    <tr class="venta-row" style="cursor:pointer" onclick="if(!event.target.closest('.btn') && !event.target.closest('form')) window.location='{{ route('ventas.show', $venta->id) }}'" data-id="{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}" data-pago="{{ strtolower($venta->metodo_pago) }}">
+                    <tr class="venta-row" style="cursor:pointer" onclick="if(!event.target.closest('.btn') && !event.target.closest('form')) window.location='{{ route('ventas.show', $venta->id) }}'" data-id="{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}" data-pago="{{ strtolower($venta->metodo_pago) }}" data-origen="{{ $venta->origen === 'online' ? 'online' : 'local' }}" data-estado="{{ strtolower($venta->estado) }}">
                         <td style="font-weight:600; font-family:monospace; color:var(--color-primary)">
                             #{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}
                         </td>
@@ -131,7 +148,13 @@
                             {{ $venta->created_at->format('d/m/Y') }} 
                             <span style="color:var(--color-text-muted); font-size:12.5px">{{ $venta->created_at->format('H:i') }}</span>
                         </td>
-                        <td style="font-size:12.5px">{{ $venta->vendedor->name ?? 'Sistema' }}</td>
+                        <td style="font-size:12.5px">
+                            @if($venta->origen === 'online')
+                                <span style="color:var(--color-text-muted)">-</span>
+                            @else
+                                {{ $venta->vendedor->name ?? 'Sistema' }}
+                            @endif
+                        </td>
                         <td>
                             @if($venta->origen === 'online')
                                 <span class="badge" style="background:rgba(99,102,241,0.1); color:#818cf8; border:1px solid rgba(99,102,241,0.2); font-size:10px">XStore (Web)</span>
@@ -203,6 +226,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputSearch = document.getElementById('filter-search');
+            const selectOrigen = document.getElementById('filter-origen');
+            const selectPago = document.getElementById('filter-pago');
+            const selectEstado = document.getElementById('filter-estado');
             const btnLimpiar = document.getElementById('btn-limpiar');
             const rowElements = document.querySelectorAll('.venta-row');
             const tableContainer = document.getElementById('table-container');
@@ -210,16 +236,26 @@
 
             function filterTable() {
                 const term = inputSearch.value.toLowerCase().trim();
+                const origen = selectOrigen.value;
+                const pago = selectPago.value;
+                const estado = selectEstado.value;
                 let hasVisibleRows = false;
-                const isFiltered = term !== '';
+                const isFiltered = term !== '' || origen !== '' || pago !== '' || estado !== '';
 
                 btnLimpiar.style.display = isFiltered ? 'inline-flex' : 'none';
 
                 rowElements.forEach(row => {
                     const rowId = row.dataset.id;
                     const rowPago = row.dataset.pago;
+                    const rowOrigen = row.dataset.origen;
+                    const rowEstado = row.dataset.estado;
 
-                    if (term === '' || rowId.includes(term) || rowPago.includes(term)) {
+                    const matchesTerm = term === '' || rowId.includes(term);
+                    const matchesOrigen = origen === '' || rowOrigen === origen;
+                    const matchesPago = pago === '' || rowPago === pago;
+                    const matchesEstado = estado === '' || rowEstado === estado;
+
+                    if (matchesTerm && matchesOrigen && matchesPago && matchesEstado) {
                         row.style.display = '';
                         hasVisibleRows = true;
                     } else {
@@ -234,10 +270,16 @@
             }
 
             inputSearch.addEventListener('input', filterTable);
+            selectOrigen.addEventListener('change', filterTable);
+            selectPago.addEventListener('change', filterTable);
+            selectEstado.addEventListener('change', filterTable);
 
             btnLimpiar.addEventListener('click', (e) => {
                 e.preventDefault();
                 inputSearch.value = '';
+                selectOrigen.value = '';
+                selectPago.value = '';
+                selectEstado.value = '';
                 filterTable();
             });
         });

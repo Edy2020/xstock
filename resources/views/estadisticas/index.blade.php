@@ -5,8 +5,7 @@
             <h1>Estadísticas</h1>
             <p>Análisis de rendimiento del inventario y ventas</p>
         </div>
-        {{-- Selector de periodo --}}
-        <div style="display:flex; gap:6px">
+        <div style="display:flex; gap:6px; align-items:center;">
             <button type="button" onclick="setPeriodData('dia')" class="btn btn-secondary btn-sm filter-btn-period" data-period="dia">Hoy</button>
             <button type="button" onclick="setPeriodData('semana')" class="btn btn-primary btn-sm filter-btn-period" data-period="semana">Semana</button>
             <button type="button" onclick="setPeriodData('mes')" class="btn btn-secondary btn-sm filter-btn-period" data-period="mes">Mes</button>
@@ -21,7 +20,6 @@
     </div>
 
     <div id="tab-pane-general">
-    {{-- KPIs principales agrupados --}}
     <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-bottom:24px">
         <div class="stat-card" style="padding: 12px;">
             <div class="stat-icon" style="background:#eff6ff; width:32px; height:32px;">
@@ -66,12 +64,11 @@
             <div class="stat-value" style="font-size:20px">{{ number_format($stockCritico, 0, ',', '.') }}</div>
         </div>
     </div>
-    </div> <!-- /tab-pane-general -->
+    </div>
 
     <div id="tab-pane-ventas" style="display:none;">
     <div class="grid-2" style="margin-bottom:20px">
 
-        {{-- Ventas por día (tabla de muestra) --}}
         <div class="card">
             <div class="card-header">
                 <div>
@@ -79,33 +76,11 @@
                     <div class="card-subtitle">Comparativa con semana anterior</div>
                 </div>
             </div>
-            <div class="table-wrapper" style="border:none">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Ventas</th>
-                            <th>Ingresos</th>
-                            <th>Gastos</th>
-                            <th>vs ant.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($diasData as $d)
-                        <tr class="{{ !empty($d['is_today']) ? 'highlight-today' : '' }}">
-                            <td style="text-transform:capitalize; {{ !empty($d['is_today']) ? 'font-weight:600; color:var(--color-primary)' : '' }}">{{ $d['dia'] }}</td>
-                            <td>{{ $d['ventas'] }}</td>
-                            <td style="font-weight:500; color:var(--color-success)">{{ $d['ing'] }}</td>
-                            <td style="font-weight:500; color:var(--color-danger)">{{ $d['gas'] }}</td>
-                            <td><span class="badge badge-gray" style="font-size:10.5px">—</span></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div style="height:250px; position:relative;">
+                <canvas id="chart-ventas"></canvas>
             </div>
         </div>
 
-        {{-- Productos más vendidos --}}
         <div class="card">
             <div class="card-header">
                 <div class="card-title">Productos más vendidos</div>
@@ -115,13 +90,24 @@
                     <div style="padding:20px; text-align:center; color:var(--color-text-muted)">Aún no hay ventas registradas.</div>
                 @else
                     @foreach($top as $i => $t)
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px">
-                            <span style="font-weight:500">{{ $i+1 }}. {{ $t['nombre'] }}</span>
-                            <span style="color:var(--color-text-muted)">{{ $t['ventas'] }} vendidos</span>
-                        </div>
-                        <div class="progress-bar-wrap">
-                            <div class="progress-bar-fill" style="width:{{ $t['pct'] }}%"></div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        @if($i == 0)
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        @elseif($i == 1)
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        @elseif($i == 2)
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        @else
+                            <div style="width:20px; text-align:center; font-size:12px; font-weight:600; color:var(--color-text-muted)">{{ $i+1 }}</div>
+                        @endif
+                        <div style="flex:1">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px">
+                                <span style="font-weight:500">{{ $t['nombre'] }}</span>
+                                <span style="color:var(--color-text-muted)">{{ $t['ventas'] }} vendidos</span>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar-fill" style="width:{{ $t['pct'] }}%"></div>
+                            </div>
                         </div>
                     </div>
                     @endforeach
@@ -130,54 +116,24 @@
         </div>
 
     </div>
-    </div> <!-- /tab-pane-ventas -->
+    </div>
 
     <div id="tab-pane-inventario" style="display:none;">
-    {{-- Stock por categoría y tendencia --}}
     <div class="grid-2">
         <div class="card">
             <div class="card-title" style="margin-bottom:14px">Inventario por Categoría</div>
-            <div class="table-wrapper" style="border:none">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Categoría</th>
-                            <th>Productos</th>
-                            <th>Stock total</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                        @forelse($inventarioCat as $cat)
-                            <tr>
-                                <td style="text-transform:capitalize">{{ $cat->categoria }}</td>
-                                <td>{{ $cat->cantidad_productos }}</td>
-                                <td>{{ number_format($cat->stock_total, 0, ',', '.') }}</td>
-                                <td>${{ number_format($cat->valor_total, 0, ',', '.') }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--color-text-muted)">No hay categorías registradas</td></tr>
-                        @endforelse
-                </table>
+            <div style="height:250px; position:relative;">
+                <canvas id="chart-categorias"></canvas>
             </div>
         </div>
 
         <div class="card">
             <div class="card-title" style="margin-bottom:14px">Tendencia de Ventas — Últimas 4 semanas</div>
-            <div style="display:flex; flex-direction:column; gap:10px">
-                @foreach($semanasData as $s)
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:8px 0; border-bottom:1px solid var(--color-border)">
-                    <span style="color:var(--color-text-muted)">{{ $s['sem'] }}</span>
-                    <div style="display:flex; gap:16px; align-items:center">
-                        <span>{{ $s['ventas'] }} ventas</span>
-                        <span style="font-weight:600">{{ $s['ing'] }}</span>
-                    </div>
-                </div>
-                @endforeach
+            <div style="height:250px; position:relative;">
+                <canvas id="chart-tendencia"></canvas>
             </div>
         </div>
     </div>
-
-    {{-- Productos en Stock Crítico --}}
     @if($stockCritico > 0)
     <div class="card" style="margin-top: 20px; border-left: 4px solid var(--color-danger);">
         <div class="card-title" style="margin-bottom:14px; color: var(--color-danger); display:flex; align-items:center; gap:8px;">
@@ -220,77 +176,15 @@
         </div>
     </div>
     @endif
-    </div> <!-- /tab-pane-inventario -->
+    </div>
 
     <script>
-    const periodData = @json($periodData ?? []);
-
-    function setPeriodData(period) {
-        document.querySelectorAll('.filter-btn-period').forEach(btn => {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
-            if(btn.dataset.period === period) {
-                btn.classList.remove('btn-secondary');
-                btn.classList.add('btn-primary');
-            }
-        });
-
-        const data = periodData[period];
-        if(data) {
-            document.getElementById('lbl-ventas').innerText = data.labelVentas;
-            document.getElementById('val-ventas').innerText = data.ventas;
-            document.getElementById('lbl-ingresos').innerText = data.labelIngresos;
-            document.getElementById('val-ingresos').innerText = data.ingresos;
-            document.getElementById('lbl-gastos').innerText = data.labelGastos;
-            document.getElementById('val-gastos').innerText = data.gastos;
-            document.getElementById('lbl-balance').innerText = data.labelBalance;
-            document.getElementById('val-balance').innerText = data.balance;
-
-            // Actualizar colores del balance
-            const balanceBg = document.getElementById('icon-balance-bg');
-            const balanceSvg = document.getElementById('icon-balance-svg');
-            const balanceBadge = document.getElementById('badge-balance');
-            
-            if (data.balance_raw >= 0) {
-                balanceBg.style.background = '#f0fdf4';
-                balanceSvg.setAttribute('stroke', '#16a34a');
-                balanceBadge.className = 'badge badge-green';
-            } else {
-                balanceBg.style.background = '#fef2f2';
-                balanceSvg.setAttribute('stroke', '#dc2626');
-                balanceBadge.className = 'badge badge-red';
-            }
-        }
-    }
-
-    function switchStatsTab(tabName) {
-        document.getElementById('tab-pane-general').style.display = 'none';
-        document.getElementById('tab-pane-ventas').style.display = 'none';
-        document.getElementById('tab-pane-inventario').style.display = 'none';
-
-        document.getElementById('tab-btn-general').className = 'btn btn-secondary';
-        document.getElementById('tab-btn-ventas').className = 'btn btn-secondary';
-        document.getElementById('tab-btn-inventario').className = 'btn btn-secondary';
-
-        document.getElementById('tab-pane-' + tabName).style.display = 'block';
-        document.getElementById('tab-btn-' + tabName).className = 'btn btn-primary';
-    }
+        window.chartData = {
+            periodData: @json($periodData ?? []),
+            dias: @json($diasData ?? []),
+            categorias: @json($inventarioCat ?? []),
+            semanas: @json($semanasData ?? [])
+        };
     </script>
-
-    <style>
-    @media (min-width: 769px) {
-        #stats-tabs-container { display: none !important; }
-        #tab-pane-general, #tab-pane-ventas, #tab-pane-inventario { display: block !important; }
-    }
-    @media (max-width: 1024px) {
-        #tab-pane-general > div:first-child {
-            grid-template-columns: repeat(3, 1fr) !important;
-        }
-    }
-    @media (max-width: 600px) {
-        #tab-pane-general > div:first-child {
-            grid-template-columns: repeat(2, 1fr) !important;
-        }
-    }
-    </style>
+    <x-estadisticas-scripts />
 </x-app-layout>
