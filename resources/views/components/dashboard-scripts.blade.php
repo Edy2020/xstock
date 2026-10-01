@@ -53,10 +53,11 @@
                 },
 
                 eventDrop: function(info) {
-                    fetch(`/recordatorios/${info.event.id}`, {
+                    fetch(`{{ url('recordatorios') }}/${info.event.id}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': token
                         },
                         body: JSON.stringify({
@@ -90,20 +91,27 @@
                           return;
                       }
 
-                      listEl.innerHTML = upcoming.map(e => {
+                      // Se construye con nodos DOM (textContent) para que títulos con HTML no se ejecuten
+                      listEl.innerHTML = '';
+                      upcoming.forEach(e => {
                           const dateObj = new Date(e.start);
                           const day = String(dateObj.getDate()).padStart(2, '0');
                           const month = String(dateObj.getMonth()+1).padStart(2, '0');
                           const time = dateObj.toTimeString().slice(0,5);
-                          return `
-                          <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid var(--color-border); border-radius:6px; cursor:pointer; background:var(--color-bg)" onclick='openReminderModal(${JSON.stringify(e).replace(/'/g, "&#39;")})'>
-                              <div style="width:10px; height:10px; border-radius:50%; background:${e.backgroundColor}; flex-shrink:0; margin-top:3px"></div>
+
+                          const item = document.createElement('div');
+                          item.style.cssText = 'display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid var(--color-border); border-radius:6px; cursor:pointer; background:var(--color-bg)';
+                          item.innerHTML = `
+                              <div class="rm-dot" style="width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:3px"></div>
                               <div style="flex:1; min-width:0">
-                                  <div style="font-size:12.5px; font-weight:600; color:var(--color-text); line-height:1.2; word-break:break-word">${e.title}</div>
+                                  <div class="rm-title" style="font-size:12.5px; font-weight:600; color:var(--color-text); line-height:1.2; word-break:break-word"></div>
                                   <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px">${day}/${month} · ${time}</div>
-                              </div>
-                          </div>`;
-                      }).join('');
+                              </div>`;
+                          item.querySelector('.rm-dot').style.background = e.backgroundColor;
+                          item.querySelector('.rm-title').textContent = e.title;
+                          item.addEventListener('click', () => openReminderModal(e));
+                          listEl.appendChild(item);
+                      });
                   });
             }
 
@@ -113,7 +121,7 @@
                 e.preventDefault();
                 
                 const id = document.getElementById('rm-id').value;
-                const url = id ? `/recordatorios/${id}` : "{{ route('recordatorios.store') }}";
+                const url = id ? `{{ url('recordatorios') }}/${id}` : "{{ route('recordatorios.store') }}";
                 const method = id ? 'PUT' : 'POST';
                 const btnText = document.getElementById('btn-save-rm').innerText;
                 
@@ -136,6 +144,7 @@
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': token
                     },
                     body: JSON.stringify(payload)
@@ -155,15 +164,16 @@
                 });
             });
 
-            document.getElementById('btn-delete-rm').addEventListener('click', function() {
-                if(!confirm('¿Estás seguro de eliminar este recordatorio?')) return;
-                
+            document.getElementById('btn-delete-rm').addEventListener('click', async function() {
+                if (!(await confirmDialog('¿Estás seguro de eliminar este recordatorio?', 'Eliminar'))) return;
+
                 const id = document.getElementById('rm-id').value;
                 document.getElementById('btn-delete-rm').innerText = '...';
 
-                fetch(`/recordatorios/${id}`, {
+                fetch(`{{ url('recordatorios') }}/${id}`, {
                     method: 'DELETE',
                     headers: {
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': token
                     }
                 })
@@ -192,6 +202,7 @@
         });
 
         function formatDateForInput(dateObj) {
+            dateObj = new Date(dateObj); // acepta Date o string ISO (la lista de próximos envía strings)
             const tzoffset = (new Date()).getTimezoneOffset() * 60000;
             const localISOTime = (new Date(dateObj - tzoffset)).toISOString().slice(0, 16);
             return localISOTime;

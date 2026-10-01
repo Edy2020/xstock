@@ -16,6 +16,16 @@
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
+
+        // Escapa texto antes de insertarlo con innerHTML (evita XSS con nombres de productos, recordatorios, etc.)
+        window.escapeHtml = function (value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
     </script>
 </head>
 <body>
@@ -41,27 +51,24 @@
             </div>
 
             <div class="topbar-actions" style="display:flex; align-items:center; gap:12px; position:relative">
-                
-                <div class="dropdown-notifications" style="position:relative">
-                    <button type="button" id="notif-toggle" title="Notificaciones" style="width:36px; height:36px; border-radius:50%; border:none; background:var(--color-bg); color:var(--color-text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:all 0.2s" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-muted)'">
+
+                <div class="notif-wrapper">
+                    <button type="button" id="notif-toggle" class="icon-btn" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        <span id="notif-badge" style="position:absolute; top:2px; right:2px; background:var(--color-danger); color:white; font-size:10px; font-weight:700; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center; border:2px solid var(--color-surface); box-sizing:content-box">0</span>
+                        <span id="notif-badge" class="notif-badge">0</span>
                     </button>
 
-                    <div id="notif-dropdown" style="display:none; position:absolute; top:45px; right:0; width:340px; background:var(--color-surface); border:1px solid var(--color-border); box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:8px; z-index:100; flex-direction:column; overflow:hidden;">
-                        <div style="padding:12px 16px; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center; background:var(--color-bg)">
-                            <span style="font-size:14px; font-weight:600; color:var(--color-text)">Notificaciones</span>
-                            <button id="notif-clear-all" style="font-size:12px; color:var(--color-primary); background:none; border:none; cursor:pointer; padding:0; font-weight:600;">Limpiar todas</button>
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <div class="notif-header">
+                            <span class="notif-header-title">Notificaciones</span>
+                            <button type="button" id="notif-clear-all" class="link-btn">Limpiar todas</button>
                         </div>
-                        <div id="notif-list" style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column;">
-                        </div>
-                        <div id="notif-empty" style="padding:30px 20px; text-align:center; color:var(--color-text-muted); font-size:13px; display:none;">
-                            No tienes notificaciones nuevas.
-                        </div>
+                        <div id="notif-list" class="notif-list"></div>
+                        <div id="notif-empty" class="notif-empty">No tienes notificaciones nuevas.</div>
                     </div>
                 </div>
 
-                <button type="button" id="theme-toggle" title="Cambiar tema" style="width:36px; height:36px; border-radius:50%; border:none; background:var(--color-bg); color:var(--color-text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s" onmouseover="this.style.color='var(--color-text)'" onmouseout="this.style.color='var(--color-text-muted)'">
+                <button type="button" id="theme-toggle" class="icon-btn" title="Cambiar tema" aria-label="Cambiar tema">
                     <svg id="theme-icon-light" style="display:none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
@@ -73,17 +80,35 @@
         </div>
 
         <div class="page-content">
+            <x-flash />
             {{ $slot }}
         </div>
 
     </div>
 </div>
 
+{{-- Modal de confirmación: reemplaza a confirm() en formularios con data-confirm="..." --}}
+<dialog id="confirm-modal" class="confirm-modal" aria-labelledby="confirm-modal-title">
+    <div class="confirm-modal-body">
+        <div class="confirm-modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+            <h3 id="confirm-modal-title" class="confirm-modal-title">¿Estás seguro?</h3>
+            <p id="confirm-modal-text" class="confirm-modal-text"></p>
+        </div>
+    </div>
+    <div class="confirm-modal-actions">
+        <button type="button" class="btn btn-secondary" id="confirm-modal-cancel">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirm-modal-accept">Confirmar</button>
+    </div>
+</dialog>
+
 <script>
     const themeToggleBtn = document.getElementById('theme-toggle');
     const iconLight = document.getElementById('theme-icon-light');
     const iconDark = document.getElementById('theme-icon-dark');
-    
+
     function updateThemeUI(theme) {
         if (theme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -126,36 +151,88 @@
         });
     });
 
+    // ---- Mensajes flash ----
+    function hideFlash(el) {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }
+    document.querySelectorAll('.flash-alert').forEach(function(el) {
+        el.querySelector('.flash-alert-close').addEventListener('click', () => hideFlash(el));
+        if (el.dataset.autohide === 'true') setTimeout(() => hideFlash(el), 4000);
+    });
+
+    // ---- Modal de confirmación ----
+    (function () {
+        const modal = document.getElementById('confirm-modal');
+        const text = document.getElementById('confirm-modal-text');
+        const acceptBtn = document.getElementById('confirm-modal-accept');
+        let resolver = null;
+
+        // Uso: confirmDialog('¿Eliminar?', 'Eliminar').then(ok => { if (ok) ... })
+        window.confirmDialog = function (message, buttonLabel) {
+            text.textContent = message;
+            acceptBtn.textContent = buttonLabel || 'Confirmar';
+            modal.showModal();
+            acceptBtn.focus();
+            return new Promise(resolve => { resolver = resolve; });
+        };
+
+        function finish(result) {
+            if (resolver) { resolver(result); resolver = null; }
+            if (modal.open) modal.close();
+        }
+
+        acceptBtn.addEventListener('click', () => finish(true));
+        document.getElementById('confirm-modal-cancel').addEventListener('click', () => finish(false));
+        modal.addEventListener('close', () => finish(false));
+
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form.matches('form[data-confirm]')) return;
+            e.preventDefault();
+            confirmDialog(form.dataset.confirm, form.dataset.confirmButton).then(ok => {
+                if (ok) form.submit();
+            });
+        });
+    })();
+
+    // ---- Notificaciones ----
     const notifToggle = document.getElementById('notif-toggle');
     const notifDropdown = document.getElementById('notif-dropdown');
     const notifBadge = document.getElementById('notif-badge');
     const notifList = document.getElementById('notif-list');
     const notifEmpty = document.getElementById('notif-empty');
     const notifClearAll = document.getElementById('notif-clear-all');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    if(notifToggle) {
+    if (notifToggle) {
+        function setNotifOpen(open) {
+            notifDropdown.classList.toggle('open', open);
+            notifToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
         notifToggle.addEventListener('click', function(e) {
             e.stopPropagation();
-            const isVisible = notifDropdown.style.display === 'flex';
-            notifDropdown.style.display = isVisible ? 'none' : 'flex';
-            if (!isVisible) loadNotifications();
+            const willOpen = !notifDropdown.classList.contains('open');
+            setNotifOpen(willOpen);
+            if (willOpen) loadNotifications();
         });
 
         document.addEventListener('click', function(e) {
             if (!notifToggle.contains(e.target) && !notifDropdown.contains(e.target)) {
-                notifDropdown.style.display = 'none';
+                setNotifOpen(false);
             }
         });
 
         function loadNotifications() {
-            fetch('/notificaciones/unread')
+            fetch('{{ route('notificaciones.unread') }}', { headers: { 'Accept': 'application/json' } })
                 .then(res => res.json())
                 .then(data => {
-                    if(data.success) {
+                    if (data.success) {
                         renderNotifications(data.notifications, data.count);
                     }
                 })
-                .catch(err => console.error('Error fetching notificaciones:', err));
+                .catch(err => console.error('Error al cargar notificaciones:', err));
         }
 
         function renderNotifications(notifications, count) {
@@ -168,58 +245,52 @@
                 notifEmpty.style.display = 'block';
             }
 
+            const iconMap = { 'success': '🟢', 'danger': '🔴', 'warning': '🟠', 'info': '🔵' };
+
             notifList.innerHTML = '';
             notifications.forEach(n => {
                 const data = n.data || {};
-                const iconMap = {
-                    'success': '🟢', 'danger': '🔴', 'warning': '🟠', 'info': '🔵'
-                };
-                const icon = iconMap[data.tipo] || '⚪';
 
                 const item = document.createElement('div');
-                item.style.cssText = 'padding:12px 16px; border-bottom:1px solid var(--color-border); display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:background 0.2s; position:relative';
-                item.onmouseover = () => item.style.background = 'var(--color-bg)';
-                item.onmouseout = () => item.style.background = 'transparent';
-                
-                const delBtn = document.createElement('button');
-                delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                delBtn.style.cssText = 'position:absolute; right:12px; top:12px; background:none; border:none; color:var(--color-text-muted); cursor:pointer; padding:4px';
-                delBtn.title = "Eliminar notificación";
-                delBtn.onclick = (e) => {
+                item.className = 'notif-item';
+                item.innerHTML = `
+                    <div class="notif-item-icon">${iconMap[data.tipo] || '⚪'}</div>
+                    <div class="notif-item-body">
+                        <div class="notif-item-title">${escapeHtml(data.titulo || 'Notificación')}</div>
+                        <div class="notif-item-text">${escapeHtml(data.mensaje)}</div>
+                    </div>
+                    <button type="button" class="notif-item-close" title="Eliminar notificación" aria-label="Eliminar notificación">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                `;
+
+                item.querySelector('.notif-item-close').addEventListener('click', (e) => {
                     e.stopPropagation();
                     markAsRead(n.id);
-                };
+                });
 
-                item.onclick = () => {
+                item.addEventListener('click', () => {
                     if (data.url && data.url !== '#') {
                         window.location.href = data.url;
                     }
-                };
+                });
 
-                item.innerHTML = `
-                    <div style="font-size:16px; margin-top:2px">${icon}</div>
-                    <div style="flex:1; padding-right:24px;">
-                        <div style="font-size:13px; font-weight:600; color:var(--color-text); margin-bottom:4px">${data.titulo || 'Notificación'}</div>
-                        <div style="font-size:12px; color:var(--color-text-muted); line-height:1.4">${data.mensaje || ''}</div>
-                    </div>
-                `;
-                item.appendChild(delBtn);
                 notifList.appendChild(item);
             });
         }
 
         function markAsRead(id) {
-            fetch(`/notificaciones/${id}/read`, {
+            fetch(`{{ url('notificaciones') }}/${encodeURIComponent(id)}/read`, {
                 method: 'POST',
-                headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')}
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
             }).then(() => loadNotifications());
         }
 
         notifClearAll.addEventListener('click', function(e) {
             e.stopPropagation();
-            fetch('/notificaciones/clear-all', {
+            fetch('{{ route('notificaciones.clearAll') }}', {
                 method: 'POST',
-                headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')}
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
             }).then(() => loadNotifications());
         });
 

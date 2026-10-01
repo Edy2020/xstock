@@ -23,18 +23,19 @@ Route::middleware('auth')->group(function () {
     Route::post('productos/import', [\App\Http\Controllers\ProductoController::class , 'import'])->name('productos.import');
     Route::get('productos/export/excel', [\App\Http\Controllers\ProductoController::class , 'exportExcel'])->name('productos.export.excel');
     Route::get('productos/export/pdf', [\App\Http\Controllers\ProductoController::class , 'exportPdf'])->name('productos.export.pdf');
-    Route::resource('productos', \App\Http\Controllers\ProductoController::class);
+    Route::resource('productos', \App\Http\Controllers\ProductoController::class)
+        ->middlewareFor(['index', 'show'], 'permission:productos.ver');
 
 
     // Ventas
     Route::prefix('ventas')->name('ventas.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\VentaController::class , 'index'])->name('index');
+            Route::get('/', [\App\Http\Controllers\VentaController::class , 'index'])->name('index')->middleware('permission:ventas.ver');
             Route::get('/nueva', [\App\Http\Controllers\VentaController::class , 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\VentaController::class , 'store'])->name('store');
-            Route::get('/export', [\App\Http\Controllers\VentaController::class , 'exportOptions'])->name('export.options');
-            Route::get('/export/excel', [\App\Http\Controllers\VentaController::class , 'exportExcel'])->name('export.excel');
-            Route::get('/export/pdf', [\App\Http\Controllers\VentaController::class , 'exportPdf'])->name('export.pdf');
-            Route::get('/{venta}', [\App\Http\Controllers\VentaController::class , 'show'])->name('show');
+            Route::get('/export', [\App\Http\Controllers\VentaController::class , 'exportOptions'])->name('export.options')->middleware('permission:ventas.ver');
+            Route::get('/export/excel', [\App\Http\Controllers\VentaController::class , 'exportExcel'])->name('export.excel')->middleware('permission:ventas.ver');
+            Route::get('/export/pdf', [\App\Http\Controllers\VentaController::class , 'exportPdf'])->name('export.pdf')->middleware('permission:ventas.ver');
+            Route::get('/{venta}', [\App\Http\Controllers\VentaController::class , 'show'])->name('show')->middleware('permission:ventas.ver');
             Route::post('/{venta}/confirmar', [\App\Http\Controllers\VentaController::class , 'confirmar'])->name('confirmar');
             Route::post('/{venta}/anular', [\App\Http\Controllers\VentaController::class , 'anular'])->name('anular');
             Route::delete('/{venta}', [\App\Http\Controllers\VentaController::class , 'destroy'])->name('destroy');
@@ -45,11 +46,11 @@ Route::middleware('auth')->group(function () {
         Route::post('proveedores/import', [\App\Http\Controllers\ProveedorController::class , 'import'])->name('proveedores.import');
         Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)->parameters([
             'proveedores' => 'proveedor'
-        ]);
+        ])->middlewareFor(['index', 'show'], 'permission:proveedores.ver');
 
 
         // Estadísticas
-        Route::get('/estadisticas', [\App\Http\Controllers\EstadisticaController::class , 'index'])->name('estadisticas.index');
+        Route::get('/estadisticas', [\App\Http\Controllers\EstadisticaController::class , 'index'])->name('estadisticas.index')->middleware('permission:estadisticas.ver');
 
         // Notificaciones
         Route::prefix('notificaciones')->name('notificaciones.')->group(function () {

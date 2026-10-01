@@ -39,6 +39,16 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        $esUltimoAdmin = $user->role_id === \App\Models\Role::ADMIN_ID
+            && !\App\Models\User::where('role_id', \App\Models\Role::ADMIN_ID)
+                ->where('estado', 'activo')
+                ->where('id', '!=', $user->id)
+                ->exists();
+
+        if ($esUltimoAdmin) {
+            return back()->withErrors(['password' => 'No puedes eliminar tu cuenta: eres el último Administrador activo.'], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();

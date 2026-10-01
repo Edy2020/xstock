@@ -48,6 +48,14 @@ class Venta extends Model
         'total' => 'integer',
     ];
 
+    /**
+     * Ventas que cuentan como ingreso real (excluye anuladas y pedidos en preparación).
+     */
+    public function scopeCompletadas($query)
+    {
+        return $query->where('estado', 'completada');
+    }
+
     public function detalles()
     {
         return $this->hasMany(DetalleVenta::class , 'venta_id');

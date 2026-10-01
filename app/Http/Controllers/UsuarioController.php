@@ -75,6 +75,17 @@ class UsuarioController extends Controller
             'estado' => ['required', 'in:activo,inactivo'],
         ]);
 
+        $pierdeAdmin = $usuario->role_id === Role::ADMIN_ID
+            && ((int) $request->role_id !== Role::ADMIN_ID || $request->estado === 'inactivo');
+
+        if ($usuario->id === auth()->id() && ((int) $request->role_id !== $usuario->role_id || $request->estado === 'inactivo')) {
+            return back()->withErrors(['error' => 'No puedes cambiar tu propio rol ni desactivar tu propia cuenta.'])->withInput();
+        }
+
+        if ($pierdeAdmin && $this->esUltimoAdmin($usuario)) {
+            return back()->withErrors(['error' => 'Debe existir al menos un Administrador activo en el sistema.'])->withInput();
+        }
+
         $data = [
             'name' => $request->name,
             'email' => $request->email,
@@ -103,7 +114,11 @@ class UsuarioController extends Controller
     public function destroy(User $usuario)
     {
         if ($usuario->id === auth()->id()) {
-            return redirect()->route('usuarios.index')->with('error', 'No puedes eliminarte a ti mismo.');
+            return redirect()->route('usuarios.index')->withErrors(['error' => 'No puedes eliminarte a ti mismo.']);
+        }
+
+        if ($usuario->role_id === Role::ADMIN_ID && $this->esUltimoAdmin($usuario)) {
+            return redirect()->route('usuarios.index')->withErrors(['error' => 'No se puede eliminar al último Administrador activo.']);
         }
 
         $nombre = $usuario->name;
@@ -118,5 +133,13 @@ class UsuarioController extends Controller
         ]);
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado exitosamente.');
+    }
+
+    private function esUltimoAdmin(User $usuario): bool
+    {
+        return !User::where('role_id', Role::ADMIN_ID)
+            ->where('estado', 'activo')
+            ->where('id', '!=', $usuario->id)
+            ->exists();
     }
 }

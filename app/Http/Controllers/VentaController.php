@@ -17,7 +17,7 @@ class VentaController extends Controller
         $ventas = Venta::with(['detalles', 'vendedor'])->latest()->get();
         
         $totalVentas = Venta::count();
-        $ingresosHoy = Venta::whereDate('created_at', now()->toDateString())->sum('total');
+        $ingresosHoy = Venta::completadas()->whereDate('created_at', now()->toDateString())->sum('total');
         $pedidosPendientes = Venta::where('estado', 'preparacion')->count();
 
         return view('ventas.index', compact('ventas', 'totalVentas', 'ingresosHoy', 'pedidosPendientes'));
@@ -48,8 +48,24 @@ class VentaController extends Controller
 
         $productosJson = json_decode($request->productos, true);
 
-        if (empty($productosJson)) {
+        if (empty($productosJson) || !is_array($productosJson)) {
             return back()->withErrors(['error' => 'Debe añadir al menos un producto a la venta.'])->withInput();
+        }
+
+        // El carrito llega como JSON desde el cliente: se valida cada ítem en el servidor
+        // para impedir cantidades negativas o descuentos fuera de rango.
+        $itemsValidator = validator(['items' => $productosJson], [
+            'items'             => 'required|array|min:1',
+            'items.*.id'        => 'required|integer',
+            'items.*.cantidad'  => 'required|integer|min:1',
+            'items.*.descuento' => 'nullable|integer|min:0|max:100',
+        ], [
+            'items.*.cantidad.min' => 'La cantidad de cada producto debe ser al menos 1.',
+            'items.*.descuento.max' => 'El descuento por producto no puede superar el 100%.',
+        ]);
+
+        if ($itemsValidator->fails()) {
+            return back()->withErrors($itemsValidator)->withInput();
         }
 
         try {
@@ -73,15 +89,19 @@ class VentaController extends Controller
             foreach ($productosJson as $item) {
                 $producto = Producto::where('id', $item['id'])->lockForUpdate()->first();
 
-                if (!$producto || $producto->stock < $item['cantidad']) {
-                    throw new \Exception("Stock insuficiente para: " . ($producto ? $producto->nombre : 'Producto desconocido'));
+                if (!$producto || $producto->estado !== 'activo') {
+                    throw new \Exception("Producto no disponible para la venta: " . ($producto ? $producto->nombre : 'Producto desconocido'));
+                }
+
+                if ($producto->stock < $item['cantidad']) {
+                    throw new \Exception("Stock insuficiente para: " . $producto->nombre);
                 }
 
                 $cantidad = (int) $item['cantidad'];
                 $precioUnitario = (int) $producto->precio;
                 $descuentoPorcentaje = (int) ($item['descuento'] ?? 0);
-                
-                $montoDescuento = ($precioUnitario * $cantidad) * ($descuentoPorcentaje / 100);
+
+                $montoDescuento = (int) round(($precioUnitario * $cantidad) * ($descuentoPorcentaje / 100));
                 $subtotalItem = ($precioUnitario * $cantidad) - $montoDescuento;
 
                 DetalleVenta::create([
@@ -113,7 +133,7 @@ class VentaController extends Controller
 
             $descuentoGlobalPorcentaje = (float) ($request->descuento_global ?? 0);
             if ($descuentoGlobalPorcentaje > 0 && $descuentoGlobalPorcentaje <= 100) {
-                $montoDescGlobal = $totalVenta * ($descuentoGlobalPorcentaje / 100);
+                $montoDescGlobal = (int) round($totalVenta * ($descuentoGlobalPorcentaje / 100));
                 $totalVenta -= $montoDescGlobal;
                 $descuentoTotalVenta += $montoDescGlobal;
             }
@@ -159,7 +179,13 @@ class VentaController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
+            $venta = Venta::whereKey($venta->id)->lockForUpdate()->firstOrFail();
+            if ($venta->estado !== 'preparacion') {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Solo se pueden confirmar ventas en preparación.']);
+            }
+
             $venta->update(['estado' => 'completada']);
 
             LogActividad::create([
@@ -195,7 +221,15 @@ class VentaController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
+            // Bloquea la venta y revalida el estado para evitar devolver el stock dos veces
+            // si llegan dos solicitudes de anulación simultáneas.
+            $venta = Venta::whereKey($venta->id)->lockForUpdate()->firstOrFail();
+            if ($venta->estado === 'anulada') {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'La venta ya se encuentra anulada.']);
+            }
+
             foreach ($venta->detalles as $detalle) {
                 if ($detalle->producto_id) {
                     Producto::where('id', $detalle->producto_id)->increment('stock', $detalle->cantidad);
@@ -290,13 +324,13 @@ class VentaController extends Controller
                     '#' . str_pad($v->id, 5, '0', STR_PAD_LEFT),
                     $v->created_at->format('d/m/Y'),
                     $v->created_at->format('H:i'),
-                    $v->vendedor->name ?? 'Desconocido',
-                    $v->metodo_pago,
+                    $this->csvSafe($v->vendedor->name ?? 'Desconocido'),
+                    $this->csvSafe($v->metodo_pago),
                     $v->detalles->sum('cantidad'),
                     $v->subtotal,
                     $v->descuento_total,
                     $v->total,
-                    $v->notas ?? '',
+                    $this->csvSafe($v->notas ?? ''),
                 ], ';');
             }
             fclose($handle);

@@ -26,7 +26,7 @@ class RoleController extends Controller
             'descripcion' => 'nullable|string|max:1000',
         ]);
 
-        $validated['permisos'] = $request->input('permisos', []);
+        $validated['permisos'] = Role::sanitizePermisos($request->input('permisos', []));
         $role = Role::create($validated);
 
         LogActividad::create([
@@ -54,9 +54,9 @@ class RoleController extends Controller
     {
         $data = $request->input('roles', []);
         
-        foreach (Role::all() as $role) {
-            $permisos = $data[$role->id]['permisos'] ?? [];
-            $role->permisos = $permisos;
+        // El Administrador principal queda fuera: sus permisos no se pueden modificar
+        foreach (Role::where('id', '!=', Role::ADMIN_ID)->get() as $role) {
+            $role->permisos = Role::sanitizePermisos($data[$role->id]['permisos'] ?? []);
             $role->save();
         }
 
@@ -78,15 +78,14 @@ class RoleController extends Controller
             'descripcion' => 'nullable|string|max:1000',
         ]);
         
-        if ($role->id !== 1) { // Protege el nombre del admin si se envía modificado por error
+        if (!$role->isAdmin()) { // Protege el nombre del admin si se envía modificado por error
             $role->nombre = $validated['nombre'];
         }
         $role->descripcion = $validated['descripcion'];
 
         // Permisos
-        if ($role->id !== 1) {
-            $permisos = $request->input('permisos', []);
-            $role->permisos = $permisos;
+        if (!$role->isAdmin()) {
+            $role->permisos = Role::sanitizePermisos($request->input('permisos', []));
         }
         $role->save();
 
@@ -103,7 +102,7 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
-        if ($role->id === 1) {
+        if ($role->isAdmin()) {
             return back()->with('error', 'No se puede eliminar el rol de Administrador.');
         }
 

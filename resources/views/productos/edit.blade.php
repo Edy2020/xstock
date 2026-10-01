@@ -145,7 +145,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
                 @if(auth()->user()->hasPermission('productos.eliminar'))
                 <form method="POST" action="{{ route('productos.destroy', $producto) }}"
-                      onsubmit="return confirm('¿Eliminar el producto «{{ $producto->nombre }}»?')">
+                      data-confirm="¿Eliminar el producto «{{ $producto->nombre }}»?" data-confirm-button="Eliminar">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger btn-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>

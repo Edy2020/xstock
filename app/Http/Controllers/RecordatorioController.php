@@ -39,7 +39,8 @@ class RecordatorioController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'color' => 'nullable|string|max:20',
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'descripcion' => 'nullable|string|max:2000',
         ]);
 
         $recordatorio = Recordatorio::create([
@@ -71,6 +72,7 @@ class RecordatorioController extends Controller
             return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
         }
         if ($request->has('fecha') && count($request->all()) == 1) {
+            $request->validate(['fecha' => 'required|date']);
             $recordatorio->update(['fecha' => $request->fecha]);
             return response()->json(['success' => true]);
         }
@@ -82,6 +84,8 @@ class RecordatorioController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'descripcion' => 'nullable|string|max:2000',
         ]);
 
         $recordatorio->update([

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="es">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="{{ asset('css/xstock.css') }}">
         
         <script>
-            const savedTheme = localStorage.getItem('xstock-theme') || 'dark';
+            const savedTheme = localStorage.getItem('xstock-theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
         </script>
         
@@ -235,6 +235,84 @@
             .forgot-link:hover {
                 color: var(--color-text);
                 border-bottom-color: var(--color-text);
+            }
+
+            /* Contenedor y mensajes compartidos por todas las pantallas de acceso */
+            .auth-form-wrap {
+                width: 100%;
+                max-width: 340px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .auth-form {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .auth-text {
+                font-size: 13px;
+                color: var(--color-text-muted);
+                line-height: 1.55;
+                margin: 0 0 22px;
+            }
+            .auth-error {
+                width: 100%;
+                text-align: left;
+                margin: -8px 0 12px;
+                color: var(--color-danger);
+                font-size: 12px;
+            }
+            .auth-status {
+                width: 100%;
+                margin-bottom: 16px;
+                padding: 10px 12px;
+                border-radius: 8px;
+                font-size: 12.5px;
+                text-align: left;
+                background: rgba(22, 163, 74, 0.1);
+                color: var(--color-success);
+            }
+            .auth-links {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                width: 100%;
+            }
+            .auth-links form { margin: 0; }
+            .auth-links button.forgot-link {
+                background: none;
+                border: none;
+                border-bottom: 1px solid transparent;
+                cursor: pointer;
+                padding: 0;
+                font-family: inherit;
+            }
+            .remember-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12.5px;
+                margin-top: 20px;
+                margin-bottom: 28px;
+                width: 100%;
+                gap: 12px;
+            }
+            .remember-label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+                color: var(--color-text-muted);
+            }
+            .remember-label input {
+                width: 16px;
+                height: 16px;
+                margin: 0;
+                accent-color: var(--color-primary);
+                cursor: pointer;
             }
         </style>
     </head>

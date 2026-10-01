@@ -230,7 +230,12 @@ class ProductoController extends Controller
         abort_unless(auth()->user()->hasPermission('productos.eliminar'), 403, 'No tienes permiso para eliminar productos.');
 
         $nombre = $producto->nombre;
+        $imagen = $producto->imagen;
         $producto->delete();
+
+        if ($imagen) {
+            Storage::disk('public')->delete($imagen);
+        }
 
         LogActividad::create([
             'user_id' => auth()->id(),
@@ -258,7 +263,10 @@ class ProductoController extends Controller
         $file = $request->file('archivo_csv');
         $handle = fopen($file->getRealPath(), "r");
 
-        fgetcsv($handle, 1000, ",");
+        // Detecta el separador a partir de la cabecera: la exportación del sistema usa ";"
+        // y Excel en configuración regional latina también, así que se aceptan ambos.
+        $cabecera = fgets($handle);
+        $separador = substr_count((string) $cabecera, ';') > substr_count((string) $cabecera, ',') ? ';' : ',';
 
         $agregados = 0;
         $omitidos = 0;
@@ -266,7 +274,7 @@ class ProductoController extends Controller
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+            while (($row = fgetcsv($handle, 0, $separador)) !== false) {
                 if (empty(trim($row[0] ?? '')))
                     continue;
 
@@ -370,10 +378,10 @@ class ProductoController extends Controller
             fputcsv($handle, ['Nombre', 'Descripción', 'Categoría', 'Proveedor', 'Precio (CLP)', 'Stock', 'Estado'], ';');
             foreach ($productos as $p) {
                 fputcsv($handle, [
-                    $p->nombre,
-                    $p->descripcion ?? '',
-                    $p->categoria ?? '',
-                    $p->proveedor->nombre ?? '',
+                    $this->csvSafe($p->nombre),
+                    $this->csvSafe($p->descripcion ?? ''),
+                    $this->csvSafe($p->categoria ?? ''),
+                    $this->csvSafe($p->proveedor->nombre ?? ''),
                     $p->precio,
                     $p->stock,
                     $p->estado,

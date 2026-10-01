@@ -16,8 +16,8 @@ class DashboardController extends Controller
         $productosMes = Producto::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-        $ventasHoy = Venta::whereDate('created_at', now()->toDateString())->count();
-        $ventasAyer = Venta::whereDate('created_at', now()->subDay()->toDateString())->count();
+        $ventasHoy = Venta::completadas()->whereDate('created_at', now()->toDateString())->count();
+        $ventasAyer = Venta::completadas()->whereDate('created_at', now()->subDay()->toDateString())->count();
 
         $porcentajeVentas = 0;
         if ($ventasAyer > 0) {

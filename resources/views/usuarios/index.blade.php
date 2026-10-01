@@ -12,8 +12,9 @@
     </div>
 
     @if ($errors->any())
-        <div class="alert alert-danger" style="background:#fef2f2; color:#dc2626; padding:12px; border-radius:6px; margin-bottom:16px;">
-            <ul style="margin:0; padding-left:20px;">
+        <div class="alert alert-danger" role="alert" style="margin-bottom:16px">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -75,7 +76,7 @@
                         <div style="display:flex; gap:6px">
                             <button class="btn btn-secondary btn-sm" onclick="editUser({{ $u->toJson() }})">Editar</button>
                             @if(auth()->id() !== $u->id)
-                            <form action="{{ route('usuarios.destroy', $u->id) }}" method="POST" onsubmit="return confirm('¿Seguro de eliminar este usuario?');">
+                            <form action="{{ route('usuarios.destroy', $u->id) }}" method="POST" data-confirm="¿Seguro de eliminar este usuario?" data-confirm-button="Eliminar">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                             </form>

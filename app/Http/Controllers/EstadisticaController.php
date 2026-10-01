@@ -23,12 +23,12 @@ class EstadisticaController extends Controller
         ];
 
         foreach ($timeframes as $key => $startDate) {
-            $ingresos = Venta::where('created_at', '>=', $startDate)->sum('total');
+            $ingresos = Venta::completadas()->where('created_at', '>=', $startDate)->sum('total');
             $gastos = Gasto::where('created_at', '>=', $startDate)->sum('total');
             $balance = $ingresos - $gastos;
 
             $periodData[$key] = [
-                'ventas' => number_format(Venta::where('created_at', '>=', $startDate)->count(), 0, ',', '.'),
+                'ventas' => number_format(Venta::completadas()->where('created_at', '>=', $startDate)->count(), 0, ',', '.'),
                 'ingresos' => '$' . number_format($ingresos, 0, ',', '.'),
                 'gastos' => '$' . number_format($gastos, 0, ',', '.'),
                 'balance' => '$' . number_format($balance, 0, ',', '.'),
@@ -50,8 +50,8 @@ class EstadisticaController extends Controller
         $diasData = collect();
         for ($i = 0; $i <= 6; $i++) {
             $date = $inicioSemana->copy()->addDays($i);
-            $ventas = Venta::whereDate('created_at', $date)->count();
-            $ingresos = Venta::whereDate('created_at', $date)->sum('total');
+            $ventas = Venta::completadas()->whereDate('created_at', $date)->count();
+            $ingresos = Venta::completadas()->whereDate('created_at', $date)->sum('total');
             $gastos = Gasto::whereDate('created_at', $date)->sum('total');
             $diasData->push([
                 'dia' => ucfirst($date->locale('es')->translatedFormat('l')) . ($date->isToday() ? ' (Hoy)' : ''),
@@ -64,6 +64,7 @@ class EstadisticaController extends Controller
         }
 
         $topProductos = DetalleVenta::select('producto_nombre', DB::raw('SUM(cantidad) as total_vendido'))
+            ->whereHas('venta', fn ($q) => $q->completadas())
             ->groupBy('producto_nombre')
             ->orderByDesc('total_vendido')
             ->take(5)
@@ -92,8 +93,8 @@ class EstadisticaController extends Controller
             $start = Carbon::now()->subWeeks($i)->startOfWeek();
             $end = Carbon::now()->subWeeks($i)->endOfWeek();
 
-            $ventasCount = Venta::whereBetween('created_at', [$start, $end])->count();
-            $ingresosSum = Venta::whereBetween('created_at', [$start, $end])->sum('total');
+            $ventasCount = Venta::completadas()->whereBetween('created_at', [$start, $end])->count();
+            $ingresosSum = Venta::completadas()->whereBetween('created_at', [$start, $end])->sum('total');
 
             $semanasData->push([
                 'sem' => 'Sem ' . (4 - $i) . ' (' . ucfirst($start->locale('es')->translatedFormat('d M')) . ' — ' . ucfirst($end->locale('es')->translatedFormat('d M')) . ')',

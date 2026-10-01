@@ -201,7 +201,7 @@
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>
-                                <span style="font-weight:500">${item.nombre}</span><br>
+                                <span style="font-weight:500">${escapeHtml(item.nombre)}</span><br>
                                 <span style="font-size:11.5px; color:var(--color-text-muted)">Stock disp: ${item.stock}</span>
                             </td>
                             <td>${formatCLP(item.precio)}</td>
@@ -340,7 +340,7 @@
                         const visualStock = cartItem ? (p.stock - cartItem.cantidad) : p.stock;
 
                         tr.innerHTML = `
-                            <td style="font-weight:500">${p.nombre}</td>
+                            <td style="font-weight:500">${escapeHtml(p.nombre)}</td>
                             <td class="cat-stock-cell" data-original-stock="${p.stock}">${visualStock}</td>
                             <td>${formatCLP(p.precio)}</td>
                             <td style="text-align:center">

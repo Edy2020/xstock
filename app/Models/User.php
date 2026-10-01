@@ -39,8 +39,12 @@ class User extends Authenticatable
 
     public function hasPermission($permissionStr)
     {
-        if (!$this->role) {
+        if (!$this->role || $this->estado === 'inactivo') {
             return false;
+        }
+
+        if ($this->role->isAdmin()) {
+            return true;
         }
 
         $permisosDelRol = $this->role->permisos ?? [];

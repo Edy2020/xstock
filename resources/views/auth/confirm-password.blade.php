@@ -1,27 +1,26 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+    <div class="auth-form-wrap">
+
+        <h2 class="auth-title">Confirmar Contraseña</h2>
+        <p class="auth-text">
+            Estás entrando a un área protegida. Confirma tu contraseña para continuar.
+        </p>
+
+        <form method="POST" action="{{ route('password.confirm') }}" class="auth-form">
+            @csrf
+
+            <div class="input-group">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input id="password" class="input-field" type="password" name="password" required autofocus autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña">
+            </div>
+            @error('password') <div class="auth-error" role="alert">{{ $message }}</div> @enderror
+
+            <button type="submit" class="btn-submit">
+                CONFIRMAR
+            </button>
+        </form>
     </div>
-
-    <form method="POST" action="{{ route('password.confirm') }}">
-        @csrf
-
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
-    </form>
 </x-guest-layout>

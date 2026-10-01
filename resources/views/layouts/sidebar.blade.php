@@ -114,23 +114,19 @@
     </nav>
 
     <div class="sidebar-footer">
-        <a href="{{ route('profile.edit') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none; flex:1; overflow:hidden; padding:4px; margin-left:-4px; border-radius:6px; transition:background 0.2s" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'" title="Ajustes de Perfil">
+        <a href="{{ route('profile.edit') }}" class="sidebar-profile-link" title="Ajustes de Perfil">
             <div class="user-avatar" style="flex-shrink:0">
-                {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                {{ mb_strtoupper(mb_substr(Auth::user()->name ?? 'U', 0, 1)) }}
             </div>
-            <div style="overflow:hidden; min-width:0; flex:1">
-                <div style="font-size:12.5px; font-weight:600; color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-                    {{ Auth::user()->name ?? 'Usuario' }}
-                </div>
-                <div style="font-size:11px; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-                    {{ Auth::user()->email ?? '' }}
-                </div>
+            <div class="sidebar-profile-text">
+                <div class="sidebar-profile-name">{{ Auth::user()->name ?? 'Usuario' }}</div>
+                <div class="sidebar-profile-email">{{ Auth::user()->email ?? '' }}</div>
             </div>
         </a>
 
         <form method="POST" action="{{ route('logout') }}" style="margin:0">
             @csrf
-            <button type="submit" title="Cerrar sesión" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--color-danger); background:transparent; color:var(--color-danger); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; padding:0" onmouseover="this.style.background='var(--color-danger)'; this.style.color='#ffffff'" onmouseout="this.style.background='transparent'; this.style.color='var(--color-danger)'">
+            <button type="submit" class="icon-btn icon-btn-danger" title="Cerrar sesión" aria-label="Cerrar sesión">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/>

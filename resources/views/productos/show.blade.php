@@ -115,7 +115,7 @@
                     <div style="height: 220px; width: 100%; margin-top:10px">
                         <canvas id="compraChart"></canvas>
                     </div>
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const ctx = document.getElementById('compraChart').getContext('2d');
